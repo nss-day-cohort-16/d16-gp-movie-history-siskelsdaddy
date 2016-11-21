@@ -1,4 +1,6 @@
-.hide {
-  display: none; }
+body {
+  background-image: url("../images/mysteryScienceBg.jpg");
+  background-repeat: no-repeat;
+  background-size: 100%; }
 
 /*# sourceMappingURL=main.css.map */
