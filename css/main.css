@@ -3,4 +3,8 @@ body {
   background-repeat: no-repeat;
   background-size: 100%; }
 
+#pageWrapper {
+  width: 80%;
+  margin: auto; }
+
 /*# sourceMappingURL=main.css.map */
