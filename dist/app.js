@@ -32,6 +32,7 @@ function getKey() {
 }
 
 module.exports = getKey;
+
 },{}],3:[function(require,module,exports){
 "use strict";
 
