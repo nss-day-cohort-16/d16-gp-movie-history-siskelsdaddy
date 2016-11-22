@@ -2,7 +2,8 @@
 "use strict";
 
 let firebase = require("./fb-config"),
-	cards = require("./movieCards.js");
+	cards = require("./movieCards.js"),
+	user = require("./user.js");
 
 function searchOMDB(title) {
 	return new Promise(function(resolve,reject) {
@@ -34,10 +35,25 @@ function searchID(ID) {
 	});
 }
 
-module.exports = {searchOMDB, searchID};
+function addToFirebase(movieObject) {
+	movieObject.uid = user.getUser();
+	if (movieObject.uid) {
+		console.log("movieObject", movieObject);
+		return new Promise((resolve,reject) => {
+			$.ajax({
+				url: 'https://moviehistory-f323f.firebaseio.com/movies.json',
+				type: "POST",
+				data: JSON.stringify(movieObject),
+				dataType: 'json'
+			});
+		});
+	}
+}
+
+module.exports = {searchOMDB, searchID, addToFirebase};
 
 
-},{"./fb-config":2,"./movieCards.js":5}],2:[function(require,module,exports){
+},{"./fb-config":2,"./movieCards.js":5,"./user.js":6}],2:[function(require,module,exports){
 "use strict";
 
 
@@ -117,11 +133,23 @@ $("#query").keydown(function(e) {
 	}
 });
 
-$("#movieOutput").click(function () {
+// $("#movieOutput").click(function () {
+// 	console.log("this", event.target.id);
+// 	let ID = event.target.id;
+// 	db.searchID(ID)
+// 	.then((movieObject) => {
+
+// 	});
+
+// });
+
+$(document).on("click", ".addToListBtn", () => {
 	console.log("this", event.target.id);
 	let ID = event.target.id;
-	db.searchID(ID);
-
+	db.searchID(ID)
+	.then((movieObject) => {
+		db.addToFirebase(movieObject);
+	});
 });
 
 /*FIlTER EVENT LISTENERS*/
@@ -150,6 +178,9 @@ $("#favoritesBtn").click(function (){
 	console.log("favoritesBtn",this);
 });
 
+$(document).on("click", ".addToListBtn", () => {
+	db.addToFirebase();
+});
 
 
 // console.log("testing WITH array");
@@ -199,7 +230,7 @@ cards.cardBuilder = (movieData) => {
 		<h2>${value.Title}</h2>
 		<img class="moviePoster" src="${value.Poster}">${currentActors}
 		<div class="btn-group btn-group-justified">
-	      <a id="${value.imdbID}" href="#" class="btn btn-primary">Add to Watchlist</a>
+	      <a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>
 	    </div></div>`;
 		
 		if ((index + 1) % 3 === 0) {

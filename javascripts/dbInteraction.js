@@ -1,7 +1,8 @@
 "use strict";
 
 let firebase = require("./fb-config"),
-	cards = require("./movieCards.js");
+	cards = require("./movieCards.js"),
+	user = require("./user.js");
 
 function searchOMDB(title) {
 	return new Promise(function(resolve,reject) {
@@ -33,5 +34,20 @@ function searchID(ID) {
 	});
 }
 
-module.exports = {searchOMDB, searchID};
+function addToFirebase(movieObject) {
+	movieObject.uid = user.getUser();
+	if (movieObject.uid) {
+		console.log("movieObject", movieObject);
+		return new Promise((resolve,reject) => {
+			$.ajax({
+				url: 'https://moviehistory-f323f.firebaseio.com/movies.json',
+				type: "POST",
+				data: JSON.stringify(movieObject),
+				dataType: 'json'
+			});
+		});
+	}
+}
+
+module.exports = {searchOMDB, searchID, addToFirebase};
 
