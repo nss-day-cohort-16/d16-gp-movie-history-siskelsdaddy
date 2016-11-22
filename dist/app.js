@@ -1,26 +1,28 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-let firebase = require("./fb-config");
+let firebase = require("./fb-config"),
+	cards = require("./movieCards.js");
 
 function searchOMDB(title) {
 	return new Promise(function(resolve,reject) {
 		$.ajax({
-			url: `http://www.omdbapi.com/?t="${title}"&y=&plot=short&r=json`
+			url: `http://www.omdbapi.com/?s="${title}"&y=&plot=short&r=json`
 		}).done(function(movieData) {
-			console.log("movieData", movieData);
-			console.log("movieData.Poster", movieData.Poster);
-			console.log("movieData.Title", movieData.Title);
-			console.log("movieData.Year", movieData.Year);
-			console.log("movieData.Actors", movieData.Actors);
-			console.log("movieData.Plot", movieData.Plot);
+			console.log("movieData from searchOMDB", movieData);
+			// console.log("movieData.Poster", movieData.Poster);
+			// console.log("movieData.Title", movieData.Title);
+			// console.log("movieData.Year", movieData.Year);
+			// console.log("movieData.Actors", movieData.Actors);
+			// console.log("movieData.Plot", movieData.Plot);
 			resolve(movieData);
+			cards.cardBuilder(movieData.Search);
 		});
 	});
 }
 
 module.exports = {searchOMDB};
-},{"./fb-config":2}],2:[function(require,module,exports){
+},{"./fb-config":2,"./movieCards.js":5}],2:[function(require,module,exports){
 "use strict";
 
 
@@ -41,7 +43,7 @@ var config = {
 firebase.initializeApp(config);
 
 module.exports = firebase;
-},{"./fb-getter":3,"firebase/app":6,"firebase/auth":7,"firebase/database":8}],3:[function(require,module,exports){
+},{"./fb-getter":3,"firebase/app":7,"firebase/auth":8,"firebase/database":9}],3:[function(require,module,exports){
 "use strict";
 
 
@@ -58,7 +60,8 @@ module.exports = getKey;
 "use strict";
 
 let user = require("./user"),
-	db = require("./dbInteraction");
+	db = require("./dbInteraction"),
+	cards = require("./movieCards.js");
 
 
 
@@ -121,6 +124,10 @@ $("#notWatchedMovies").click(function (){
 	console.log("notWatchedMovies",this);
 });
 
+// console.log("testing WITH array");
+// cards.cardBuilder(["a", "b"]);
+// console.log("testing WITH string");
+// cards.cardBuilder("snarf");
 
 
 
@@ -128,7 +135,55 @@ $("#notWatchedMovies").click(function (){
 
 
 
-},{"./dbInteraction":1,"./user":5}],5:[function(require,module,exports){
+},{"./dbInteraction":1,"./movieCards.js":5,"./user":6}],5:[function(require,module,exports){
+"use strict";
+
+const OUTPUT = $("#movieOutput");
+
+let cards = {};
+cards.cardBuilder = (movieData) => {
+	OUTPUT.html('');
+	let cardsString = '',
+		outputString;
+	// let movieArray = movieData.Search;
+
+	if (Array.isArray(movieData)) {
+		console.log("movieData is an array");
+		//convert logic
+	} else {
+		console.log("movieData is not an array");
+	}
+	// console.log("movieArray", movieArray);
+	movieData.forEach((value, index) => {
+		// console.log("value", value);
+		console.log("index", index);
+		if(index % 3 === 0){ 
+			cardsString = `<div class="row">`;
+		}
+
+		cardsString += `<div id="movieCard--${index}" class="col-md-4 movieCard"><h2>${value.Title}</h2><img class="moviePoster" src="${value.Poster}"></div>`;
+		
+		if ((index + 1) % 3 === 0) {
+			cardsString += `</div>`;
+		} else if (index === movieData.length - 1) {
+			cardsString += `</div>`;
+		}
+		outputString += cardsString;
+		cardsString = '';
+		console.log("cardsString", cardsString);
+
+
+
+	});
+	OUTPUT.append(outputString);
+
+};
+
+module.exports = cards;
+
+
+
+},{}],6:[function(require,module,exports){
 "use strict";
 let firebase = require("./fb-config"),
      provider = new firebase.auth.GoogleAuthProvider(),
@@ -160,7 +215,7 @@ function getUser(){
 
 
 module.exports = {logInGoogle, logOut, getUser};
-},{"./fb-config":2}],6:[function(require,module,exports){
+},{"./fb-config":2}],7:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -195,7 +250,7 @@ firebase.SDK_VERSION = "3.6.1";
 module.exports = firebase;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var firebase = require('./app');
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -411,7 +466,7 @@ V(Bf,"credential",Bf.credential,[ih(T(),U(),"token"),T("secret",!0)]);
 a,function(a,c){if("create"===a)try{c.auth()}catch(d){}});firebase.INTERNAL.extendNamespace({User:W})}else throw Error("Cannot find the firebase namespace; be sure to include firebase-app.js before this library.");})();})();
 module.exports = firebase.auth;
 
-},{"./app":6}],8:[function(require,module,exports){
+},{"./app":7}],9:[function(require,module,exports){
 var firebase = require('./app');
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -674,4 +729,4 @@ d;return d.Ya},{Reference:U,Query:X,Database:Se,enableLogging:xc,INTERNAL:Y,TEST
 
 module.exports = firebase.database;
 
-},{"./app":6}]},{},[4]);
+},{"./app":7}]},{},[4]);

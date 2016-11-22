@@ -1,7 +1,8 @@
 "use strict";
 
 let user = require("./user"),
-	db = require("./dbInteraction");
+	db = require("./dbInteraction"),
+	cards = require("./movieCards.js");
 
 
 
@@ -64,6 +65,10 @@ $("#notWatchedMovies").click(function (){
 	console.log("notWatchedMovies",this);
 });
 
+// console.log("testing WITH array");
+// cards.cardBuilder(["a", "b"]);
+// console.log("testing WITH string");
+// cards.cardBuilder("snarf");
 
 
 
