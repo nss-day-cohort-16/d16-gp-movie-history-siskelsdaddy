@@ -148,10 +148,10 @@ cards.cardBuilder = (movieData) => {
 	// let movieArray = movieData.Search;
 
 	if (Array.isArray(movieData)) {
-		console.log("movieData is an array");
-		//convert logic
+		// console.log("movieData is an array");
 	} else {
-		console.log("movieData is not an array");
+		movieData = [movieData];
+		// console.log("movieData is not an array");
 	}
 	// console.log("movieArray", movieArray);
 	movieData.forEach((value, index) => {
@@ -171,12 +171,8 @@ cards.cardBuilder = (movieData) => {
 		outputString += cardsString;
 		cardsString = '';
 		console.log("cardsString", cardsString);
-
-
-
 	});
 	OUTPUT.append(outputString);
-
 };
 
 module.exports = cards;
