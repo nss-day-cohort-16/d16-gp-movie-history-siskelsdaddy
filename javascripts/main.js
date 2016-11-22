@@ -43,11 +43,23 @@ $("#query").keydown(function(e) {
 	}
 });
 
-$("#movieOutput").click(function () {
+// $("#movieOutput").click(function () {
+// 	console.log("this", event.target.id);
+// 	let ID = event.target.id;
+// 	db.searchID(ID)
+// 	.then((movieObject) => {
+
+// 	});
+
+// });
+
+$(document).on("click", ".addToListBtn", () => {
 	console.log("this", event.target.id);
 	let ID = event.target.id;
-	db.searchID(ID);
-
+	db.searchID(ID)
+	.then((movieObject) => {
+		db.addToFirebase(movieObject);
+	});
 });
 
 /*FIlTER EVENT LISTENERS*/
@@ -76,6 +88,9 @@ $("#favoritesBtn").click(function (){
 	console.log("favoritesBtn",this);
 });
 
+$(document).on("click", ".addToListBtn", () => {
+	db.addToFirebase();
+});
 
 
 // console.log("testing WITH array");

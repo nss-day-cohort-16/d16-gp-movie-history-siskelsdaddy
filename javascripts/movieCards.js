@@ -33,7 +33,7 @@ cards.cardBuilder = (movieData) => {
 		<h2>${value.Title}</h2>
 		<img class="moviePoster" src="${value.Poster}">${currentActors}
 		<div class="btn-group btn-group-justified">
-	      <a id="${value.imdbID}" href="#" class="btn btn-primary">Add to Watchlist</a>
+	      <a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>
 	    </div></div>`;
 		
 		if ((index + 1) % 3 === 0) {
