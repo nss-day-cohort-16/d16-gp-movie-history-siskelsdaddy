@@ -14,13 +14,12 @@ $("#signIn").click(function() {
     let user = result.user;
     $("#signIn").addClass("hide");
     $("#signOut").removeClass("hide");
-    $("#radioAll").removeAttr("checked", "checked");
-    $("#radioYour").removeAttr("disabled", "disabled");	
-
+   
   });
 });
 
 $("#signOut").click(function (){
+	user.logOut();
 	location.reload();
 });
 
