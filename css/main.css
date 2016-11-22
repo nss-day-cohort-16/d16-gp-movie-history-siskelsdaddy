@@ -1,5 +1,18 @@
+i {
+  padding-right: 5px; }
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 20px; }
+
 #pageWrapper {
   width: 80%;
-  margin: auto; }
+  margin: 20px auto; }
+
+#query {
+  max-width: 250px; }
+
+#viewTracker {
+  margin-bottom: 20px; }
 
 /*# sourceMappingURL=main.css.map */
