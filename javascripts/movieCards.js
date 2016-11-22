@@ -6,7 +6,7 @@ let cards = {};
 cards.cardBuilder = (movieData) => {
 	OUTPUT.html('');
 	let cardsString = '',
-		outputString;
+		outputString = '';
 	// let movieArray = movieData.Search;
 
 	if (Array.isArray(movieData)) {
@@ -17,8 +17,8 @@ cards.cardBuilder = (movieData) => {
 	}
 	// console.log("movieArray", movieArray);
 	movieData.forEach((value, index) => {
-		console.log("value", value);
-		console.log("index", index);
+		// console.log("value", value);
+		// console.log("index", index);
 		if(index % 3 === 0){ 
 			cardsString = `<div class="row">`;
 		}
