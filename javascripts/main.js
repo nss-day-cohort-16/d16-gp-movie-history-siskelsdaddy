@@ -43,27 +43,40 @@ $("#query").keydown(function(e) {
 	}
 });
 
+$("#movieOutput").click(function () {
+	console.log("this", event.target.id);
+	let ID = event.target.id;
+	db.searchID(ID);
+
+});
+
 /*FIlTER EVENT LISTENERS*/
 
-$("#radioAll").change(function () {
-	console.log("radioAll", this);
+// $("#radioAll").change(function () {
+// 	console.log("radioAll", this);
+// });
+
+// $("#radioYour").change(function () {
+// 	console.log("radioYour", this);
+// });
+
+$("#showUntrackedBtn").click(function (){
+	console.log("showUntrackedBtn",this);
 });
 
-$("#radioYour").change(function () {
-	console.log("radioYour", this);
+$("#showUnwatchedBtn").click(function (){
+	console.log("showUnwatchedBtn",this);
 });
 
-$("#allMovies").click(function (){
-	console.log("allMovies",this);
+$("#showWatchedBtn").click(function (){
+	console.log("showWatchedBtn",this);
 });
 
-$("#watchedMovies").click(function (){
-	console.log("watchedMovies",this);
+$("#favoritesBtn").click(function (){
+	console.log("favoritesBtn",this);
 });
 
-$("#notWatchedMovies").click(function (){
-	console.log("notWatchedMovies",this);
-});
+
 
 // console.log("testing WITH array");
 // cards.cardBuilder(["a", "b"]);
