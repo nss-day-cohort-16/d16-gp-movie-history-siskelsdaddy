@@ -20,4 +20,18 @@ function searchOMDB(title) {
 	});
 }
 
-module.exports = {searchOMDB};
+function searchID(ID) {
+	console.log("ID", ID);
+	return new Promise(function(resolve,reject) {
+		$.ajax({
+			url: `http://www.omdbapi.com/?i=${ID}&plot=short&r=json`
+		}).done(function(movieData) {
+			console.log("movieData from searchOMDB", movieData);
+			resolve(movieData);
+			cards.cardBuilder(movieData);
+		});
+	});
+}
+
+module.exports = {searchOMDB, searchID};
+

@@ -21,7 +21,22 @@ function searchOMDB(title) {
 	});
 }
 
-module.exports = {searchOMDB};
+function searchID(ID) {
+	console.log("ID", ID);
+	return new Promise(function(resolve,reject) {
+		$.ajax({
+			url: `http://www.omdbapi.com/?i=${ID}&plot=short&r=json`
+		}).done(function(movieData) {
+			console.log("movieData from searchOMDB", movieData);
+			resolve(movieData);
+			cards.cardBuilder(movieData);
+		});
+	});
+}
+
+module.exports = {searchOMDB, searchID};
+
+
 },{"./fb-config":2,"./movieCards.js":5}],2:[function(require,module,exports){
 "use strict";
 
@@ -102,27 +117,40 @@ $("#query").keydown(function(e) {
 	}
 });
 
+$("#movieOutput").click(function () {
+	console.log("this", event.target.id);
+	let ID = event.target.id;
+	db.searchID(ID);
+
+});
+
 /*FIlTER EVENT LISTENERS*/
 
-$("#radioAll").change(function () {
-	console.log("radioAll", this);
+// $("#radioAll").change(function () {
+// 	console.log("radioAll", this);
+// });
+
+// $("#radioYour").change(function () {
+// 	console.log("radioYour", this);
+// });
+
+$("#showUntrackedBtn").click(function (){
+	console.log("showUntrackedBtn",this);
 });
 
-$("#radioYour").change(function () {
-	console.log("radioYour", this);
+$("#showUnwatchedBtn").click(function (){
+	console.log("showUnwatchedBtn",this);
 });
 
-$("#allMovies").click(function (){
-	console.log("allMovies",this);
+$("#showWatchedBtn").click(function (){
+	console.log("showWatchedBtn",this);
 });
 
-$("#watchedMovies").click(function (){
-	console.log("watchedMovies",this);
+$("#favoritesBtn").click(function (){
+	console.log("favoritesBtn",this);
 });
 
-$("#notWatchedMovies").click(function (){
-	console.log("notWatchedMovies",this);
-});
+
 
 // console.log("testing WITH array");
 // cards.cardBuilder(["a", "b"]);
@@ -154,16 +182,24 @@ cards.cardBuilder = (movieData) => {
 		// console.log("movieData is not an array");
 	}
 	// console.log("movieArray", movieArray);
+	let currentActors;
 	movieData.forEach((value, index) => {
+		if (value.Actors === undefined) {
+			 currentActors = '';
+		} else {
+			 currentActors = `<p>Actors: ${value.Actors}</p>`;
+		}
 		// console.log("value", value);
 		// console.log("index", index);
 		if(index % 3 === 0){ 
 			cardsString = `<div class="row">`;
 		}
 
-		cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-4 movieCard"><h2>${value.Title}</h2><img class="moviePoster" src="${value.Poster}"><div class="btn-group btn-group-justified">
-	      <a id="haveSeen--${index}" href="#" class="btn btn-primary">Have Seen</a>
-	      <a id="wantToSee--${index}" href="#" class="btn btn-primary">Want To See</a>
+		cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-4 movieCard">
+		<h2>${value.Title}</h2>
+		<img class="moviePoster" src="${value.Poster}">${currentActors}
+		<div class="btn-group btn-group-justified">
+	      <a id="${value.imdbID}" href="#" class="btn btn-primary">Add to Watchlist</a>
 	    </div></div>`;
 		
 		if ((index + 1) % 3 === 0) {

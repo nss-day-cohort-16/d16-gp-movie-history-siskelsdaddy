@@ -26,19 +26,12 @@
 	      </div>
 	      <form class="navbar-form navbar-left">
 	        <div class="form-group">
-	          <input id="query" type="text" class="form-control" placeholder="Search">
+	          <input id="query" type="text" class="form-control" placeholder="Search" size= "100">
 	        </div>
 	        <button id="search" type="button" class="btn btn-default">Search</button>
 	      </form>
 	      <div>
-	        <form>
-	          <label class="radio-inline">
-	            <input id="radioAll" type="radio" name="radioFilter" checked="checked" value="">Search All Movies
-	          </label>
-	          <label class="radio-inline">
-	            <input id="radioYour" type="radio" name="radioFilter" disabled="disabled" value="">Search Your Movies
-	          </label>
-	        </form>
+
 	      </div>
 	      <ul class="nav navbar-nav navbar-right">
 	        <li><a href="#" id="signIn">Sign In</a></li>
@@ -48,9 +41,10 @@
 	    <!-- /.container-fluid -->
 	  </nav>
 	    <div class="btn-group btn-group-justified">
-	      <a id="allMovies" href="#" class="btn btn-primary">All</a>
-	      <a id="watchedMovies" href="#" class="btn btn-primary">Watched</a>
-	      <a id="notWatchedMovies" href="#" class="btn btn-primary">Not Watched</a>
+	      <a id="showUntrackedBtn" href="#" class="btn btn-primary">Show Untracked</a>
+	      <a id="showUnwatchedBtn" href="#" class="btn btn-primary">Show Unwatched</a>
+	      <a id="showWatchedBtn" href="#" class="btn btn-primary">Show Watched</a>
+	      <a id="favoritesBtn" href="#" class="btn btn-primary">Favortites</a>
 	    </div>
 	    <div class="container" id="movieOutput"></div>
 	</div>
