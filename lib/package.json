@@ -24,6 +24,8 @@
     "matchdep": "^1.0.1"
   },
   "dependencies": {
-    "firebase": "^3.6.1"
+    "firebase": "^3.6.1",
+    "font-awesome": "^4.7.0",
+    "jquery-bar-rating": "^1.2.1"
   }
 }
