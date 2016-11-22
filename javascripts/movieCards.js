@@ -4,6 +4,7 @@ const OUTPUT = $("#movieOutput");
 
 let cards = {};
 cards.cardBuilder = (movieData) => {
+	console.log("movieData", movieData);
 	OUTPUT.html('');
 	let cardsString = '',
 		outputString = '';
