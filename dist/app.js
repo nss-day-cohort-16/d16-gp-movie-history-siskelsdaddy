@@ -47,6 +47,10 @@ function addToFirebase(movieObject) {
 				dataType: 'json'
 			});
 		});
+	} else {
+		user.logInGoogle();
+		 $("#signIn").addClass("hide");
+		 $("#signOut").removeClass("hide");
 	}
 }
 
@@ -105,13 +109,12 @@ $("#signIn").click(function() {
     let user = result.user;
     $("#signIn").addClass("hide");
     $("#signOut").removeClass("hide");
-    $("#radioAll").removeAttr("checked", "checked");
-    $("#radioYour").removeAttr("disabled", "disabled");	
-
+   
   });
 });
 
 $("#signOut").click(function (){
+	user.logOut();
 	location.reload();
 });
 

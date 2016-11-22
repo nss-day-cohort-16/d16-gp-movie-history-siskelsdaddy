@@ -46,6 +46,10 @@ function addToFirebase(movieObject) {
 				dataType: 'json'
 			});
 		});
+	} else {
+		user.logInGoogle();
+		 $("#signIn").addClass("hide");
+		 $("#signOut").removeClass("hide");
 	}
 }
 
