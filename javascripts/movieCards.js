@@ -4,10 +4,13 @@ const OUTPUT = $("#movieOutput");
 
 let cards = {};
 cards.cardBuilder = (movieData) => {
+
+  console.log("movieData", movieData);
   OUTPUT.html('');
   let cardsString = '',
     outputString = '';
   // let movieArray = movieData.Search;
+
 
   if (Array.isArray(movieData)) {
     // console.log("movieData is an array");
