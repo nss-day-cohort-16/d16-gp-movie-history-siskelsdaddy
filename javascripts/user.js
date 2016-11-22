@@ -26,4 +26,6 @@ function getUser(){
     return currentUser;
 }
 
+
+
 module.exports = {logInGoogle, logOut, getUser};

@@ -5,8 +5,8 @@ let firebase = require("firebase/app"),
     fb = require("./fb-getter"),
     fbData = fb();
 
-require("../lib/node_modules/firebase/auth");
-require("../lib/node_modules/firebase/database");
+require("firebase/auth");
+require("firebase/database");
 
 var config = {
   apiKey: fbData.apiKey,
