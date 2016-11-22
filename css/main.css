@@ -1,7 +1,8 @@
 body {
   background-image: url("../images/mysteryScienceBg.jpg");
   background-repeat: no-repeat;
-  background-size: 100%; }
+  background-size: 100%;
+  background-attachment: fixed; }
 
 #pageWrapper {
   width: 80%;
