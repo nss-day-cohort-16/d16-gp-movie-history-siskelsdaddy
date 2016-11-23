@@ -27,15 +27,37 @@ function searchOMDB(title) {
 				$.ajax({
 					url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${currentUser}"`
 				}).done((firebaseMovies)=>{
-					console.log("firebaseMovies", firebaseMovies);
+					// console.log("firebaseMovies", firebaseMovies);
 					resolve(firebaseMovies);
+
+					let idArray = Object.keys(firebaseMovies); //takes an array of objects and returns an array of the keys ON that object
+					idArray.forEach(function(key){
+					  firebaseMovies[key].id = key;
+					  // console.log("key", key);
+					});
+
+					console.log("firebaseMovies", firebaseMovies);
+
+					// console.log("firebaseMovies", firebaseMovies);
+						// console.log("title", title);
+					
 
 					let fbArray = $.map(firebaseMovies, function(value, index) {
 					    return [value];
 					});
+					console.log("fbArray", fbArray);
+
+
+					let filteredMovies = $.grep(fbArray, (value, index) => {
+						// console.log("value", value);
+						return value.Title === title;
+					});
+
+					console.log("filteredMovies", filteredMovies);
+
 
 					// sumArray = sumArray.concat(firebaseMovies);
-					sumArray = sumArray.concat(fbArray);
+					sumArray = sumArray.concat(filteredMovies);
 					console.log("sumArray after fb", sumArray);
 
 					sumArray = sumArray.concat(OMDBArray);
@@ -54,6 +76,13 @@ function searchOMDB(title) {
 	
 }
 
+
+
+
+
+
+// }
+
 function searchID(ID) {
 	console.log("ID", ID);
 	return new Promise(function(resolve,reject) {
@@ -68,7 +97,9 @@ function searchID(ID) {
 }
 
 function addToFirebase(movieObject) {
+	movieObject.isWatched = false;
 	movieObject.uid = user.getUser();
+	// movieObject.id = 
 	if (movieObject.uid) {
 		console.log("movieObject", movieObject);
 		return new Promise((resolve,reject) => {
@@ -86,7 +117,19 @@ function addToFirebase(movieObject) {
 	}
 }
 
-module.exports = {searchOMDB, searchID, addToFirebase};
+function removeFromFirebase(deleteID) {
+	return new Promise((resolve, reject)=>{
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies/${deleteID}.json`,
+			// url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="imdbID"&equalTo="${deleteID}"`,
+			method: "DELETE"
+		}).done(()=>{
+			resolve();
+		});
+	});
+}
+
+module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase};
 
 
 },{"./fb-config":2,"./movieCards.js":5,"./user.js":6}],2:[function(require,module,exports){
@@ -123,7 +166,6 @@ function getKey() {
 }
 
 module.exports = getKey;
-
 },{}],4:[function(require,module,exports){
 "use strict";
 
@@ -152,12 +194,31 @@ $("#signOut").click(function (){
 
 /*SEARCH EVENT LISTENERS*/
 $("#search").click(function () {
+	searcher();
+	// console.log("search");
+	// let query = $("#query").val();
+	// console.log("query", query);
+	// db.searchOMDB(query);
+	// $("#query").val('');
+});
+
+function searcher() {
 	console.log("search");
 	let query = $("#query").val();
 	console.log("query", query);
 	db.searchOMDB(query);
-	$("#query").val('');
-});
+	// $("#query").val('');
+}
+
+
+
+// $("#search").click(function () {
+// 	console.log("search");
+// 	let query = $("#query").val();
+// 	console.log("query", query);
+// 	db.searchOMDB(query);
+// 	$("#query").val('');
+// });
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
@@ -218,6 +279,19 @@ $(document).on("click", ".addToListBtn", () => {
 	db.addToFirebase();
 });
 
+$(document).on("click", ".deleteBtn", (e) => {
+	let movieID = $(event.target).data("delete-id");
+	// let movieID = $(this).data("delete-id");
+	// console.log("$(this)", $(this));
+	console.log("movieID", movieID);
+	db.removeFromFirebase(movieID)
+	.then(()=>{
+		$(event.target).parents(".movieCard").remove();
+		searcher();
+	});
+
+});
+
 
 // console.log("testing WITH array");
 // cards.cardBuilder(["a", "b"]);
@@ -252,13 +326,44 @@ cards.cardBuilder = (movieData) => {
     // console.log("movieData is not an array");
   }
   // console.log("movieArray", movieArray);
-  let currentActors;
+
+
+///////////     selection view filter pseudo logic
+
+	// if (show untracked is selected) {
+	// 	filter down to only OMDB results that are not included in firebase
+	//} else if (show unwatched is selected) {
+	// 	filter array to only movies with isWatched = false;
+	// } else if (show watched is selected) {
+	// 	filter array to only movies with isWatched = true;
+	// } else if (show favorites is selected) {
+	// 	filter results to only movies with a 10 star rating
+	// }
+	//THEN the array will continue onto the cardbuilder as usual
+
+//////////////////
+	console.log("movieData", movieData);
+
+
+  let currentActors,
+	currentDeleteButton,
+	addButton;
   movieData.forEach((value, index) => {
     if (value.Actors === undefined) {
       currentActors = '';
     } else {
       currentActors = `<p>Actors: ${value.Actors}</p>`;
     }
+
+
+    if (value.id === undefined) {
+			currentDeleteButton = '';
+			addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
+		} else {
+			currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
+			addButton = '';
+		}
+
     // console.log("value", value);
     // console.log("index", index);
     if (index % 3 === 0) {
@@ -272,12 +377,12 @@ cards.cardBuilder = (movieData) => {
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    cardsString += `<div id="m
-ovieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-4 movieCard">
+    cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-4 movieCard">
     <h2>${value.Title}</h2>
     <img class="moviePoster" src="${value.Poster}">${currentActors}
     <div class="btn-group btn-group-justified">
-        <a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>
+        ${addButton}
+        ${currentDeleteButton}
       </div>${stars}</div>`;
 
     if ((index + 1) % 3 === 0) {
@@ -286,7 +391,6 @@ ovieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-4 movieCard">
       cardsString += `</div>`;
     }
     outputString += cardsString;
-
     cardsString = '';
     console.log("cardsString", cardsString);
   });

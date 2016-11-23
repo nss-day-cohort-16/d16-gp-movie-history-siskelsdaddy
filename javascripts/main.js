@@ -25,12 +25,31 @@ $("#signOut").click(function (){
 
 /*SEARCH EVENT LISTENERS*/
 $("#search").click(function () {
+	searcher();
+	// console.log("search");
+	// let query = $("#query").val();
+	// console.log("query", query);
+	// db.searchOMDB(query);
+	// $("#query").val('');
+});
+
+function searcher() {
 	console.log("search");
 	let query = $("#query").val();
 	console.log("query", query);
 	db.searchOMDB(query);
-	$("#query").val('');
-});
+	// $("#query").val('');
+}
+
+
+
+// $("#search").click(function () {
+// 	console.log("search");
+// 	let query = $("#query").val();
+// 	console.log("query", query);
+// 	db.searchOMDB(query);
+// 	$("#query").val('');
+// });
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
@@ -89,6 +108,19 @@ $("#favoritesBtn").click(function (){
 
 $(document).on("click", ".addToListBtn", () => {
 	db.addToFirebase();
+});
+
+$(document).on("click", ".deleteBtn", (e) => {
+	let movieID = $(event.target).data("delete-id");
+	// let movieID = $(this).data("delete-id");
+	// console.log("$(this)", $(this));
+	console.log("movieID", movieID);
+	db.removeFromFirebase(movieID)
+	.then(()=>{
+		$(event.target).parents(".movieCard").remove();
+		searcher();
+	});
+
 });
 
 

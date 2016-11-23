@@ -26,15 +26,37 @@ function searchOMDB(title) {
 				$.ajax({
 					url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${currentUser}"`
 				}).done((firebaseMovies)=>{
-					console.log("firebaseMovies", firebaseMovies);
+					// console.log("firebaseMovies", firebaseMovies);
 					resolve(firebaseMovies);
+
+					let idArray = Object.keys(firebaseMovies); //takes an array of objects and returns an array of the keys ON that object
+					idArray.forEach(function(key){
+					  firebaseMovies[key].id = key;
+					  // console.log("key", key);
+					});
+
+					console.log("firebaseMovies", firebaseMovies);
+
+					// console.log("firebaseMovies", firebaseMovies);
+						// console.log("title", title);
+					
 
 					let fbArray = $.map(firebaseMovies, function(value, index) {
 					    return [value];
 					});
+					console.log("fbArray", fbArray);
+
+
+					let filteredMovies = $.grep(fbArray, (value, index) => {
+						// console.log("value", value);
+						return value.Title === title;
+					});
+
+					console.log("filteredMovies", filteredMovies);
+
 
 					// sumArray = sumArray.concat(firebaseMovies);
-					sumArray = sumArray.concat(fbArray);
+					sumArray = sumArray.concat(filteredMovies);
 					console.log("sumArray after fb", sumArray);
 
 					sumArray = sumArray.concat(OMDBArray);
@@ -53,6 +75,13 @@ function searchOMDB(title) {
 	
 }
 
+
+
+
+
+
+// }
+
 function searchID(ID) {
 	console.log("ID", ID);
 	return new Promise(function(resolve,reject) {
@@ -67,7 +96,9 @@ function searchID(ID) {
 }
 
 function addToFirebase(movieObject) {
+	movieObject.isWatched = false;
 	movieObject.uid = user.getUser();
+	// movieObject.id = 
 	if (movieObject.uid) {
 		console.log("movieObject", movieObject);
 		return new Promise((resolve,reject) => {
@@ -85,5 +116,17 @@ function addToFirebase(movieObject) {
 	}
 }
 
-module.exports = {searchOMDB, searchID, addToFirebase};
+function removeFromFirebase(deleteID) {
+	return new Promise((resolve, reject)=>{
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies/${deleteID}.json`,
+			// url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="imdbID"&equalTo="${deleteID}"`,
+			method: "DELETE"
+		}).done(()=>{
+			resolve();
+		});
+	});
+}
+
+module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase};
 
