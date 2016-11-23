@@ -132,7 +132,7 @@ function removeFromFirebase(deleteID) {
 module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase};
 
 
-},{"./fb-config":2,"./movieCards.js":5,"./user.js":6}],2:[function(require,module,exports){
+},{"./fb-config":2,"./movieCards.js":6,"./user.js":7}],2:[function(require,module,exports){
 "use strict";
 
 
@@ -153,7 +153,7 @@ var config = {
 firebase.initializeApp(config);
 
 module.exports = firebase;
-},{"./fb-getter":3,"firebase/app":7,"firebase/auth":8,"firebase/database":9}],3:[function(require,module,exports){
+},{"./fb-getter":3,"firebase/app":8,"firebase/auth":9,"firebase/database":10}],3:[function(require,module,exports){
 "use strict";
 
 
@@ -168,10 +168,49 @@ function getKey() {
 module.exports = getKey;
 },{}],4:[function(require,module,exports){
 "use strict";
+let Formatter = {
+	allReplace(string) { 
+    console.log("string", string);
+    let obj = {
+    	'\@': '%40',
+			'\#': '%23',
+			'\$': '%24',
+			'\%': '%25',
+			'\^': '%5E',
+			'\&': '%26',
+			'\\+': '%2B',
+			' ': '+',
+			'\`': '%60',
+			'\,': '%2C',
+			'\/': '%2F',
+			"\'": '%27',
+			'\\[': '%5B',
+			'\]': '%5D',
+			'\<': '%3C',
+			'\>': '%3E',
+			'\\?': '%3F',
+			'\"': '%22',
+			'\{': '%7B',
+			'\}': '%7D'
+    };
+    let retStr = string;
+    
+    for (var x in obj) {
+        retStr = retStr.replace(new RegExp(x, 'g'), obj[x]);
+    }
+    
+    return retStr;
+	}
+};
+
+module.exports = Formatter;
+},{}],5:[function(require,module,exports){
+"use strict";
 
 let user = require("./user"),
 	db = require("./dbInteraction"),
-	cards = require("./movieCards.js");
+	cards = require("./movieCards.js"),
+	Formatter = require("./formatUserInput");
 
 
 
@@ -204,7 +243,7 @@ $("#search").click(function () {
 
 function searcher() {
 	console.log("search");
-	let query = $("#query").val();
+	let query = Formatter.allReplace($("#query").val());
 	console.log("query", query);
 	db.searchOMDB(query);
 	// $("#query").val('');
@@ -222,11 +261,13 @@ function searcher() {
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
-	console.log("entersearch");
-	let query = $("#query").val();
-	console.log("query", query);
-	db.searchOMDB(query);
-	$("#query").val('');
+	e.preventDefault();
+	searcher();
+	// console.log("entersearch");
+	// let query = $("#query").val();
+	// console.log("query", query);
+	// db.searchOMDB(query);
+	// $("#query").val('');
 	}
 });
 
@@ -304,7 +345,7 @@ $(document).on("click", ".deleteBtn", (e) => {
 
 
 
-},{"./dbInteraction":1,"./movieCards.js":5,"./user":6}],5:[function(require,module,exports){
+},{"./dbInteraction":1,"./formatUserInput":4,"./movieCards.js":6,"./user":7}],6:[function(require,module,exports){
 "use strict";
 
 const OUTPUT = $("#movieOutput");
@@ -406,7 +447,7 @@ cards.cardBuilder = (movieData) => {
 
 module.exports = cards;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 let firebase = require("./fb-config"),
      provider = new firebase.auth.GoogleAuthProvider(),
@@ -438,7 +479,7 @@ function getUser(){
 
 
 module.exports = {logInGoogle, logOut, getUser};
-},{"./fb-config":2}],7:[function(require,module,exports){
+},{"./fb-config":2}],8:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -473,7 +514,7 @@ firebase.SDK_VERSION = "3.6.1";
 module.exports = firebase;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var firebase = require('./app');
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -689,7 +730,7 @@ V(Bf,"credential",Bf.credential,[ih(T(),U(),"token"),T("secret",!0)]);
 a,function(a,c){if("create"===a)try{c.auth()}catch(d){}});firebase.INTERNAL.extendNamespace({User:W})}else throw Error("Cannot find the firebase namespace; be sure to include firebase-app.js before this library.");})();})();
 module.exports = firebase.auth;
 
-},{"./app":7}],9:[function(require,module,exports){
+},{"./app":8}],10:[function(require,module,exports){
 var firebase = require('./app');
 /*! @license Firebase v3.6.1
     Build: 3.6.1-rc.3
@@ -952,4 +993,4 @@ d;return d.Ya},{Reference:U,Query:X,Database:Se,enableLogging:xc,INTERNAL:Y,TEST
 
 module.exports = firebase.database;
 
-},{"./app":7}]},{},[4]);
+},{"./app":8}]},{},[5]);

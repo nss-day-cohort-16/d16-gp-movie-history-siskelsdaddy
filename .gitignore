@@ -4,3 +4,4 @@ css/main.css.map
 css/styles.css.map
 lib/.sass-cache/
 javascripts/fb-getter.js
+dist/app.js
