@@ -2,7 +2,8 @@
 
 let user = require("./user"),
 	db = require("./dbInteraction"),
-	cards = require("./movieCards.js");
+	cards = require("./movieCards.js"),
+	Formatter = require("./formatUserInput");
 
 
 
@@ -35,7 +36,7 @@ $("#search").click(function () {
 
 function searcher() {
 	console.log("search");
-	let query = $("#query").val();
+	let query = Formatter.allReplace($("#query").val());
 	console.log("query", query);
 	db.searchOMDB(query);
 	// $("#query").val('');
@@ -53,11 +54,13 @@ function searcher() {
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
-	console.log("entersearch");
-	let query = $("#query").val();
-	console.log("query", query);
-	db.searchOMDB(query);
-	$("#query").val('');
+	e.preventDefault();
+	searcher();
+	// console.log("entersearch");
+	// let query = $("#query").val();
+	// console.log("query", query);
+	// db.searchOMDB(query);
+	// $("#query").val('');
 	}
 });
 
