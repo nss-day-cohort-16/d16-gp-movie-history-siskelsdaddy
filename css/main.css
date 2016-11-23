@@ -15,7 +15,14 @@ h1 {
 #viewTracker {
   margin-bottom: 20px; }
 
+.moviePoster {
+  height: 350px;
+  width: 250px; }
+
 .rating {
   font-size: .5em; }
+
+.movieCard {
+  max-width: 250px; }
 
 /*# sourceMappingURL=main.css.map */
