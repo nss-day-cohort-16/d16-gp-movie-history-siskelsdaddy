@@ -19,6 +19,25 @@ cards.cardBuilder = (movieData) => {
     // console.log("movieData is not an array");
   }
   // console.log("movieArray", movieArray);
+
+
+///////////     selection view filter pseudo logic
+
+	// if (show untracked is selected) {
+	// 	filter down to only OMDB results that are not included in firebase
+	//} else if (show unwatched is selected) {
+	// 	filter array to only movies with isWatched = false;
+	// } else if (show watched is selected) {
+	// 	filter array to only movies with isWatched = true;
+	// } else if (show favorites is selected) {
+	// 	filter results to only movies with a 10 star rating
+	// }
+	//THEN the array will continue onto the cardbuilder as usual
+
+//////////////////
+	console.log("movieData", movieData);
+
+
   let currentActors;
   movieData.forEach((value, index) => {
     if (value.Actors === undefined) {
