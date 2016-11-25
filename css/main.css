@@ -1,3 +1,8 @@
+body {
+  background: url(../images/mysteryScienceBg.jpg) no-repeat center center fixed;
+  background-size: cover;
+  text-shadow: 1px 1px #fff; }
+
 i {
   padding-right: 5px; }
 
@@ -16,13 +21,16 @@ h1 {
   margin-bottom: 20px; }
 
 .moviePoster {
-  height: 350px;
-  width: 250px; }
+  max-width: 225px; }
 
 .rating {
   font-size: .5em; }
 
 .movieCard {
-  max-width: 250px; }
+  max-width: 225px;
+  max-height: 325; }
+
+.br-widget {
+  padding: 5%; }
 
 /*# sourceMappingURL=main.css.map */

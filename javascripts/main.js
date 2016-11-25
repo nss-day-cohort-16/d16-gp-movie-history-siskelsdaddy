@@ -3,11 +3,17 @@
 let user = require("./user"),
 	db = require("./dbInteraction"),
 	cards = require("./movieCards.js"),
-	Formatter = require("./formatUserInput");
+	Formatter = require("./formatUserInput"),
+	userID,
+	imdbID,
+	rating,
+	recentSearch;
 
 
 
-/*AUTHENTICATE/ SIGN IN*/
+ //////////////////////////////////////////////
+    //        Auth/Sign-In
+    //////////////////////////////////////////////
 $("#signIn").click(function() {
   console.log("authenticate");
   user.logInGoogle()
@@ -24,113 +30,110 @@ $("#signOut").click(function (){
 	location.reload();
 });
 
-/*SEARCH EVENT LISTENERS*/
+ //////////////////////////////////////////////
+    //        Search Events
+    //////////////////////////////////////////////
 $("#search").click(function () {
 	searcher();
-	// console.log("search");
-	// let query = $("#query").val();
-	// console.log("query", query);
-	// db.searchOMDB(query);
-	// $("#query").val('');
+		$("#breadCrumbs").text("Movie History> Search Results");
+
 });
 
 function searcher() {
-	console.log("search");
 	let query = Formatter.allReplace($("#query").val());
-	console.log("query", query);
+	recentSearch = query;
 	db.searchOMDB(query);
-	// $("#query").val('');
 }
-
-
-
-// $("#search").click(function () {
-// 	console.log("search");
-// 	let query = $("#query").val();
-// 	console.log("query", query);
-// 	db.searchOMDB(query);
-// 	$("#query").val('');
-// });
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
 	e.preventDefault();
 	searcher();
-	// console.log("entersearch");
-	// let query = $("#query").val();
-	// console.log("query", query);
-	// db.searchOMDB(query);
-	// $("#query").val('');
+	$("#breadCrumbs").text("Movie History> Search Results");
+
 	}
 });
 
-// $("#movieOutput").click(function () {
-// 	console.log("this", event.target.id);
-// 	let ID = event.target.id;
-// 	db.searchID(ID)
-// 	.then((movieObject) => {
 
-// 	});
-
-// });
+ //////////////////////////////////////////////
+    //       Filter Event Listeners
+    //////////////////////////////////////////////
 
 $(document).on("click", ".addToListBtn", () => {
-	console.log("this", event.target.id);
 	let ID = event.target.id;
 	db.searchID(ID)
 	.then((movieObject) => {
+		console.log("movieObject", movieObject);
 		db.addToFirebase(movieObject);
 	});
 });
 
-/*FIlTER EVENT LISTENERS*/
-
-// $("#radioAll").change(function () {
-// 	console.log("radioAll", this);
-// });
-
-// $("#radioYour").change(function () {
-// 	console.log("radioYour", this);
-// });
-
 $("#showUntrackedBtn").click(function (){
-	console.log("showUntrackedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#breadCrumbs").text("Movie History > Untracked Flicks");
+	db.searchOMDB(recentSearch);
 });
 
 $("#showUnwatchedBtn").click(function (){
-	console.log("showUnwatchedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	userID = user.getUser();
+	db.getMoviesFromFirebase(userID);
+	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
 $("#showWatchedBtn").click(function (){
-	console.log("showWatchedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	let uid = user.getUser();
+	db.loadWatched(true,uid);
+	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
 });
 
 $("#favoritesBtn").click(function (){
-	console.log("favoritesBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	let uid = user.getUser();
+	db.loadFavorites(10,uid);
+	$("#breadCrumbs").text("Movie History > Favorite Flicks");
 });
 
-$(document).on("click", ".addToListBtn", () => {
-	db.addToFirebase();
-});
+ //////////////////////////////////////////////
+    //        Delete Event
+    //////////////////////////////////////////////
 
-$(document).on("click", ".deleteBtn", (e) => {
+$(document).on("click", ".deleteBtn", (event) => {
 	let movieID = $(event.target).data("delete-id");
-	// let movieID = $(this).data("delete-id");
-	// console.log("$(this)", $(this));
-	console.log("movieID", movieID);
 	db.removeFromFirebase(movieID)
 	.then(()=>{
-		$(event.target).parents(".movieCard").remove();
-		searcher();
+		userID = user.getUser();
+		db.getMoviesFromFirebase(userID);
+	
 	});
 
 });
 
+//////////////////////////////////////////////
+    //        Set Rating Event
+    //////////////////////////////////////////////
 
-// console.log("testing WITH array");
-// cards.cardBuilder(["a", "b"]);
-// console.log("testing WITH string");
-// cards.cardBuilder("snarf");
+
+$(document).on("click","div.br-widget *",(event) => {
+
+	$.each(cards.array, function(index,value) {
+
+		if (index % 2 === 0) {
+			imdbID = value;
+		} else if (index % 2 !== 0) {
+			 rating = value;
+		}
+		db.setWatched(imdbID,rating);
+	});
+});
+
+
+
+
 
 
 
