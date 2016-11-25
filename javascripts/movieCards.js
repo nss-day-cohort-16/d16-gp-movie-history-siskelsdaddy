@@ -1,9 +1,17 @@
 "use strict";
 
+var db = require("./dbInteraction"),
+favoriteMovie,
+rating,
+array = [];
+
 const OUTPUT = $("#movieOutput");
 
-let cards = {};
-cards.cardBuilder = (movieObj) => {
+  //////////////////////////////////////////////
+    //        Card Builder Logic
+    //////////////////////////////////////////////
+
+function cardBuilder(movieObj) {
 
   if (Array.isArray(movieObj)) {
   } else {
@@ -22,28 +30,13 @@ let movieData = movieObj;
   OUTPUT.html('');
   let cardsString = '',
     outputString = '';
-  // let movieArray = movieData.Search;
 
-
-///////////     selection view filter pseudo logic
-
-  // if (show untracked is selected) {
-  //  filter down to only OMDB results that are not included in firebase
-  //} else if (show unwatched is selected) {
-  //  filter array to only movies with isWatched = false;
-  // } else if (show watched is selected) {
-  //  filter array to only movies with isWatched = true;
-  // } else if (show favorites is selected) {
-  //  filter results to only movies with a 10 star rating
-  // }
-  //THEN the array will continue onto the cardbuilder as usual
-
-//////////////////
 
   let currentActors,
   currentDeleteButton,
   addButton;
   movieData.forEach((value, index) => {
+
     if (value.Actors === undefined) {
       currentActors = '';
     } else {
@@ -51,38 +44,47 @@ let movieData = movieObj;
     }
 
 
-    if (value.id === undefined) {
-      currentDeleteButton = '';
-      addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
-      addButton = '';
-    }
-
     if (index % 3 === 0) {
       cardsString = `<div class="row">`;
     }
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
-    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>';
+    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select></div>';
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    if (value.id === null){
-      stars = '';
+    
+     if (value.id === undefined) {
       currentDeleteButton = '';
+      stars = '';
+      addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
+    } else if (value.isWatched === true || value.id === null) {
+      stars = '';
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Forget This Flick</a>`;
+      addButton = '';
+    } else {
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
       addButton = '';
     }
+    /*any poster address that contains ia or had a value of N/A returned no img so i replaced with ODB*/
+    if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
+      value.Poster = 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg';
+    }
+
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
     <h2>${value.Title}</h2>
     <img class="moviePoster" src="${value.Poster}">${currentActors}
-    <div class="btn-group btn-group-justified">
+    <div class="btn">
         ${addButton}
         ${currentDeleteButton}
       </div>${stars}</div>`;
+
+        //////////////////////////////////////////////
+    //        Closing Div Logic
+    //////////////////////////////////////////////
 
     if ((index + 1) % 3 === 0) {
       cardsString += `</div>`;
@@ -97,9 +99,23 @@ let movieData = movieObj;
   //////////////////////////////////////////////
   //        Star Rating jQuery Theme
   //////////////////////////////////////////////
-    $('.example').barrating('show', {
-      theme: 'bootstrap-stars'
-    });
-};
+       $('.example').barrating('show', {
+      theme: 'bootstrap-stars',
+      onSelect: function(value, text,event) {
+      console.log("event.target", this);
+      favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+      console.log("favoriteMovie",favoriteMovie);
+      rating = value;
+      console.log("rating", rating);
+      array.push(favoriteMovie,rating);
 
-module.exports = cards;
+      /*had to throw an error here to get rating event to work
+      the star rating system was not very cooperative
+      may be a better way just wanted to get functionality going*/
+      throw new Error("stopping this shit");
+
+        }
+    });
+}
+
+module.exports = {cardBuilder, array};

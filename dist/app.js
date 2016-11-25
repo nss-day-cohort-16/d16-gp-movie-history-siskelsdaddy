@@ -5,103 +5,69 @@ let firebase = require("./fb-config"),
 	cards = require("./movieCards.js"),
 	user = require("./user.js");
 
+	var favoriteArray = [],
+		notSoFavoriteArray = [];
+
+  //////////////////////////////////////////////
+    //        Open Search Function
+    //////////////////////////////////////////////
+
 function searchOMDB(title) {
 	let sumArray = [];
 	return new Promise(function(resolve,reject) {
 		$.ajax({
 			url: `http://www.omdbapi.com/?s="${title}"&y=&plot=short&r=json`
 		}).done(function(movieData) {
-			// console.log("movieData from searchOMDB", movieData);
-			// console.log("movieData.Poster", movieData.Poster);
-			// console.log("movieData.Title", movieData.Title);
-			// console.log("movieData.Year", movieData.Year);
-			// console.log("movieData.Actors", movieData.Actors);
-			// console.log("movieData.Plot", movieData.Plot);
 			resolve(movieData);
 			let currentUser = user.getUser();
-			// console.log("currentUser during search", currentUser);
 			let OMDBArray = movieData.Search;
-			// sumArray = sumArray.concat(OMDBArray);
-			// console.log("sumArray after omdb", sumArray);
 			let firebaseResults = new Promise((resolve, reject)=>{
 				$.ajax({
 					url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${currentUser}"`
 				}).done((firebaseMovies)=>{
-					// console.log("firebaseMovies", firebaseMovies);
 					resolve(firebaseMovies);
 
-					let idArray = Object.keys(firebaseMovies); //takes an array of objects and returns an array of the keys ON that object
+					let idArray = Object.keys(firebaseMovies); 
 					idArray.forEach(function(key){
 					  firebaseMovies[key].id = key;
-					  // console.log("key", key);
 					});
-
-					console.log("firebaseMovies", firebaseMovies);
-
-					// console.log("firebaseMovies", firebaseMovies);
-						// console.log("title", title);
-					
 
 					let fbArray = $.map(firebaseMovies, function(value, index) {
 					    return [value];
 					});
-					console.log("fbArray", fbArray);
 
 
 					let filteredMovies = $.grep(fbArray, (value, index) => {
-						// console.log("value", value);
 						return value.Title === title;
 					});
-
-					console.log("filteredMovies", filteredMovies);
-
-
-					// sumArray = sumArray.concat(firebaseMovies);
 					sumArray = sumArray.concat(filteredMovies);
-					console.log("sumArray after fb", sumArray);
-
 					sumArray = sumArray.concat(OMDBArray);
-					console.log("sumArray after omdb", sumArray);
-					
 					cards.cardBuilder(sumArray);
-
-					// sumArray = sumArray.concat(firebaseMovies);
 				});
-			});
-    		});
-
-
-
-		});
-	
+			 });
+    	});
+	});
 }
 
 
-
-
-
-
-// }
-
 function searchID(ID) {
-	console.log("ID", ID);
 	return new Promise(function(resolve,reject) {
 		$.ajax({
 			url: `http://www.omdbapi.com/?i=${ID}&plot=short&r=json`
 		}).done(function(movieData) {
-			console.log("movieData from searchOMDB", movieData);
 			resolve(movieData);
-			cards.cardBuilder(movieData);
 		});
 	});
 }
 
+ //////////////////////////////////////////////
+    //        Update User Movies/Check For Auth
+    //////////////////////////////////////////////
+
 function addToFirebase(movieObject) {
 	movieObject.isWatched = false;
 	movieObject.uid = user.getUser();
-	// movieObject.id = 
 	if (movieObject.uid) {
-		console.log("movieObject", movieObject);
 		return new Promise((resolve,reject) => {
 			$.ajax({
 				url: 'https://moviehistory-f323f.firebaseio.com/movies.json',
@@ -117,11 +83,36 @@ function addToFirebase(movieObject) {
 	}
 }
 
+ //////////////////////////////////////////////
+    //        Get Users Movies
+    //////////////////////////////////////////////
+
+function getMoviesFromFirebase(userID) {
+	return new Promise((resolve,reject) => {
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${userID}"`,
+		}).done((userMovies) => {
+			let returnedArray = $.map(userMovies, function(value, index) {
+				value.id = index;
+				if (value.isWatched === false) {
+					console.log("value",value);
+					    return [value];
+					}
+					});
+			cards.cardBuilder(returnedArray);
+			resolve(userMovies);
+		});
+	});
+}
+
+ //////////////////////////////////////////////
+    //        Remove From Users DB
+    //////////////////////////////////////////////
+
 function removeFromFirebase(deleteID) {
 	return new Promise((resolve, reject)=>{
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies/${deleteID}.json`,
-			// url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="imdbID"&equalTo="${deleteID}"`,
 			method: "DELETE"
 		}).done(()=>{
 			resolve();
@@ -129,7 +120,129 @@ function removeFromFirebase(deleteID) {
 	});
 }
 
-module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase};
+ //////////////////////////////////////////////
+    //        Set Users Watched/Favorites
+    //////////////////////////////////////////////
+
+function setWatched(imdbID,rating) {
+	return new Promise((resolve,reject) => {
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="imdbID"&equalTo="${imdbID}"`,
+		}).done((favorites) => {
+			let watchedArray = $.map(favorites, function(value, index) {
+				value.id = index;
+				value.isWatched = true;
+				value.rating = rating;
+					    return [value];
+					});
+
+					function findType(obj) { 
+				    return obj.id;
+				}
+
+				if (watchedArray.rating < 10) {
+					var notSoFavoriteObj = watchedArray.find(findType);
+					let id = notSoFavoriteObj.id;
+					updateFirebase(notSoFavoriteObj,id);
+
+				} else {
+					var favObj = watchedArray.find(findType);
+					let id = favObj.id;
+					updateFirebase(favObj,id);
+				}
+
+			resolve(favorites);
+		});
+	});
+}
+
+ //////////////////////////////////////////////
+    //        Update User DB With New Props
+    //////////////////////////////////////////////
+
+
+function updateFirebase(watched,id) {	
+	return new Promise((resolve,reject) => {
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies/${id}.json`,
+			type: "PUT",
+			data: JSON.stringify(watched),
+			dataType: 'json'
+		});
+	});
+}
+
+ //////////////////////////////////////////////
+    //       Load Users Not So Fav Flicks
+    //////////////////////////////////////////////
+
+
+function loadWatched(watched,uid) {
+	return new Promise((resolve,reject) => {
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="isWatched"&equalTo=${watched}`,
+		}).done((userMovies) => {
+			let returnedArray = $.map(userMovies, function(value, index) {
+				value.id = index;
+				if(value.uid === uid) {
+					console.log("wacthedvalue", value);
+					    return [value];
+					}
+					});
+			cards.cardBuilder(returnedArray);
+			resolve(userMovies);
+		});
+	});
+}
+
+ //////////////////////////////////////////////
+    //       Load Users Fav Flicks
+    //////////////////////////////////////////////
+
+function loadFavorites(rating,uid) {
+	return new Promise((resolve,reject) => {
+		$.ajax({
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
+		}).done((userMovies) => {
+			let returnedArray = $.map(userMovies, function(value, index) {
+				value.id = index;
+				if (value.uid === uid) {
+					    return [value];
+				}
+					});
+			cards.cardBuilder(returnedArray);
+			resolve(userMovies);
+		});
+	});
+}
+module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 },{"./fb-config":2,"./movieCards.js":6,"./user.js":7}],2:[function(require,module,exports){
@@ -209,11 +322,17 @@ module.exports = Formatter;
 let user = require("./user"),
 	db = require("./dbInteraction"),
 	cards = require("./movieCards.js"),
-	Formatter = require("./formatUserInput");
+	Formatter = require("./formatUserInput"),
+	userID,
+	imdbID,
+	rating,
+	recentSearch;
 
 
 
-/*AUTHENTICATE/ SIGN IN*/
+ //////////////////////////////////////////////
+    //        Auth/Sign-In
+    //////////////////////////////////////////////
 $("#signIn").click(function() {
   console.log("authenticate");
   user.logInGoogle()
@@ -230,113 +349,110 @@ $("#signOut").click(function (){
 	location.reload();
 });
 
-/*SEARCH EVENT LISTENERS*/
+ //////////////////////////////////////////////
+    //        Search Events
+    //////////////////////////////////////////////
 $("#search").click(function () {
 	searcher();
-	// console.log("search");
-	// let query = $("#query").val();
-	// console.log("query", query);
-	// db.searchOMDB(query);
-	// $("#query").val('');
+		$("#breadCrumbs").text("Movie History> Search Results");
+
 });
 
 function searcher() {
-	console.log("search");
 	let query = Formatter.allReplace($("#query").val());
-	console.log("query", query);
+	recentSearch = query;
 	db.searchOMDB(query);
-	// $("#query").val('');
 }
-
-
-
-// $("#search").click(function () {
-// 	console.log("search");
-// 	let query = $("#query").val();
-// 	console.log("query", query);
-// 	db.searchOMDB(query);
-// 	$("#query").val('');
-// });
 
 $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
 	e.preventDefault();
 	searcher();
-	// console.log("entersearch");
-	// let query = $("#query").val();
-	// console.log("query", query);
-	// db.searchOMDB(query);
-	// $("#query").val('');
+	$("#breadCrumbs").text("Movie History> Search Results");
+
 	}
 });
 
-// $("#movieOutput").click(function () {
-// 	console.log("this", event.target.id);
-// 	let ID = event.target.id;
-// 	db.searchID(ID)
-// 	.then((movieObject) => {
 
-// 	});
-
-// });
+ //////////////////////////////////////////////
+    //       Filter Event Listeners
+    //////////////////////////////////////////////
 
 $(document).on("click", ".addToListBtn", () => {
-	console.log("this", event.target.id);
 	let ID = event.target.id;
 	db.searchID(ID)
 	.then((movieObject) => {
+		console.log("movieObject", movieObject);
 		db.addToFirebase(movieObject);
 	});
 });
 
-/*FIlTER EVENT LISTENERS*/
-
-// $("#radioAll").change(function () {
-// 	console.log("radioAll", this);
-// });
-
-// $("#radioYour").change(function () {
-// 	console.log("radioYour", this);
-// });
-
 $("#showUntrackedBtn").click(function (){
-	console.log("showUntrackedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#breadCrumbs").text("Movie History > Untracked Flicks");
+	db.searchOMDB(recentSearch);
 });
 
 $("#showUnwatchedBtn").click(function (){
-	console.log("showUnwatchedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	userID = user.getUser();
+	db.getMoviesFromFirebase(userID);
+	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
 $("#showWatchedBtn").click(function (){
-	console.log("showWatchedBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	let uid = user.getUser();
+	db.loadWatched(true,uid);
+	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
 });
 
 $("#favoritesBtn").click(function (){
-	console.log("favoritesBtn",this);
+	$(this).attr("selected", "selected");
+	$("#query").val('');
+	let uid = user.getUser();
+	db.loadFavorites(10,uid);
+	$("#breadCrumbs").text("Movie History > Favorite Flicks");
 });
 
-$(document).on("click", ".addToListBtn", () => {
-	db.addToFirebase();
-});
+ //////////////////////////////////////////////
+    //        Delete Event
+    //////////////////////////////////////////////
 
-$(document).on("click", ".deleteBtn", (e) => {
+$(document).on("click", ".deleteBtn", (event) => {
 	let movieID = $(event.target).data("delete-id");
-	// let movieID = $(this).data("delete-id");
-	// console.log("$(this)", $(this));
-	console.log("movieID", movieID);
 	db.removeFromFirebase(movieID)
 	.then(()=>{
-		$(event.target).parents(".movieCard").remove();
-		searcher();
+		userID = user.getUser();
+		db.getMoviesFromFirebase(userID);
+	
 	});
 
 });
 
+//////////////////////////////////////////////
+    //        Set Rating Event
+    //////////////////////////////////////////////
 
-// console.log("testing WITH array");
-// cards.cardBuilder(["a", "b"]);
-// console.log("testing WITH string");
-// cards.cardBuilder("snarf");
+
+$(document).on("click","div.br-widget *",(event) => {
+
+	$.each(cards.array, function(index,value) {
+
+		if (index % 2 === 0) {
+			imdbID = value;
+		} else if (index % 2 !== 0) {
+			 rating = value;
+		}
+		db.setWatched(imdbID,rating);
+	});
+});
+
+
+
+
 
 
 
@@ -347,10 +463,18 @@ $(document).on("click", ".deleteBtn", (e) => {
 },{"./dbInteraction":1,"./formatUserInput":4,"./movieCards.js":6,"./user":7}],6:[function(require,module,exports){
 "use strict";
 
+var db = require("./dbInteraction"),
+favoriteMovie,
+rating,
+array = [];
+
 const OUTPUT = $("#movieOutput");
 
-let cards = {};
-cards.cardBuilder = (movieObj) => {
+  //////////////////////////////////////////////
+    //        Card Builder Logic
+    //////////////////////////////////////////////
+
+function cardBuilder(movieObj) {
 
   if (Array.isArray(movieObj)) {
   } else {
@@ -369,28 +493,13 @@ let movieData = movieObj;
   OUTPUT.html('');
   let cardsString = '',
     outputString = '';
-  // let movieArray = movieData.Search;
 
-
-///////////     selection view filter pseudo logic
-
-  // if (show untracked is selected) {
-  //  filter down to only OMDB results that are not included in firebase
-  //} else if (show unwatched is selected) {
-  //  filter array to only movies with isWatched = false;
-  // } else if (show watched is selected) {
-  //  filter array to only movies with isWatched = true;
-  // } else if (show favorites is selected) {
-  //  filter results to only movies with a 10 star rating
-  // }
-  //THEN the array will continue onto the cardbuilder as usual
-
-//////////////////
 
   let currentActors,
   currentDeleteButton,
   addButton;
   movieData.forEach((value, index) => {
+
     if (value.Actors === undefined) {
       currentActors = '';
     } else {
@@ -398,38 +507,47 @@ let movieData = movieObj;
     }
 
 
-    if (value.id === undefined) {
-      currentDeleteButton = '';
-      addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
-      addButton = '';
-    }
-
     if (index % 3 === 0) {
       cardsString = `<div class="row">`;
     }
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
-    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option value=""></option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>';
+    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select></div>';
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    if (value.id === null){
-      stars = '';
+    
+     if (value.id === undefined) {
       currentDeleteButton = '';
+      stars = '';
+      addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
+    } else if (value.isWatched === true || value.id === null) {
+      stars = '';
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Forget This Flick</a>`;
+      addButton = '';
+    } else {
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
       addButton = '';
     }
+    /*any poster address that contains ia or had a value of N/A returned no img so i replaced with ODB*/
+    if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
+      value.Poster = 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg';
+    }
+
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
     <h2>${value.Title}</h2>
     <img class="moviePoster" src="${value.Poster}">${currentActors}
-    <div class="btn-group btn-group-justified">
+    <div class="btn">
         ${addButton}
         ${currentDeleteButton}
       </div>${stars}</div>`;
+
+        //////////////////////////////////////////////
+    //        Closing Div Logic
+    //////////////////////////////////////////////
 
     if ((index + 1) % 3 === 0) {
       cardsString += `</div>`;
@@ -444,14 +562,28 @@ let movieData = movieObj;
   //////////////////////////////////////////////
   //        Star Rating jQuery Theme
   //////////////////////////////////////////////
-    $('.example').barrating('show', {
-      theme: 'bootstrap-stars'
+       $('.example').barrating('show', {
+      theme: 'bootstrap-stars',
+      onSelect: function(value, text,event) {
+      console.log("event.target", this);
+      favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+      console.log("favoriteMovie",favoriteMovie);
+      rating = value;
+      console.log("rating", rating);
+      array.push(favoriteMovie,rating);
+
+      /*had to throw an error here to get rating event to work
+      the star rating system was not very cooperative
+      may be a better way just wanted to get functionality going*/
+      throw new Error("stopping this shit");
+
+        }
     });
-};
+}
 
-module.exports = cards;
+module.exports = {cardBuilder, array};
 
-},{}],7:[function(require,module,exports){
+},{"./dbInteraction":1}],7:[function(require,module,exports){
 "use strict";
 let firebase = require("./fb-config"),
      provider = new firebase.auth.GoogleAuthProvider(),
