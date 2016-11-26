@@ -27,20 +27,24 @@ h1 {
 }
 
 .moviePoster {
-	// height: 350px;
-	max-width: 225px;
+	height: 265px;
+	max-width: 195px;
 }
 
 .rating {
   font-size: .5em;
 }
 
-.movieCard,
- {
-	max-width: 225px;
-	max-height: 325;
+.movieCard {
+	
+	background: #fff;
+	text-align: center;
+	margin: 2% 3.5%;
+	border:3px solid #fff;
+	box-shadow: 100 100px 100px rgba(0,0,0,0.15);
+	background-color: rgba(255, 255, 255, 0.8);
 }
 
 .br-widget {
-	padding: 5%;
+	// padding: 5%;
 }
