@@ -56,30 +56,33 @@ let movieData = movieObj;
     //        Build Cards
     //////////////////////////////////////////////
     
+
      if (value.id === undefined) {
       currentDeleteButton = '';
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else if (value.isWatched === true || value.id === null) {
-      stars = '';
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Forget This Flick</a>`;
+    } else if (value.isWatched === true || value.rating) {
+      stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     }
+
     /*any poster address that contains ia or had a value of N/A returned no img so i replaced with ODB*/
+    
     if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
       value.Poster = 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg';
     }
 
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
-    <h2>${value.Title}</h2>
+        ${currentDeleteButton}
+    <h3>${value.Title}</h3>
     <img class="moviePoster" src="${value.Poster}">${currentActors}
     <div class="btn">
         ${addButton}
-        ${currentDeleteButton}
       </div>${stars}</div>`;
 
         //////////////////////////////////////////////
@@ -99,8 +102,10 @@ let movieData = movieObj;
   //////////////////////////////////////////////
   //        Star Rating jQuery Theme
   //////////////////////////////////////////////
+  
        $('.example').barrating('show', {
       theme: 'bootstrap-stars',
+
       onSelect: function(value, text,event) {
       console.log("event.target", this);
       favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");

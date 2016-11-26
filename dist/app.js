@@ -94,8 +94,7 @@ function getMoviesFromFirebase(userID) {
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
 				value.id = index;
-				if (value.isWatched === false) {
-					console.log("value",value);
+				if (value.isWatched === false && value.uid === userID) {
 					    return [value];
 					}
 					});
@@ -124,33 +123,31 @@ function removeFromFirebase(deleteID) {
     //        Set Users Watched/Favorites
     //////////////////////////////////////////////
 
-function setWatched(imdbID,rating) {
+function setWatched(uid,imdbID,rating) {
 	return new Promise((resolve,reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="imdbID"&equalTo="${imdbID}"`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
 		}).done((favorites) => {
-			let watchedArray = $.map(favorites, function(value, index) {
+			var watchedArray = $.map(favorites, function(value, index) {
 				value.id = index;
+				value.uid = user.getUser();
 				value.isWatched = true;
 				value.rating = rating;
 					    return [value];
 					});
 
-					function findType(obj) { 
-				    return obj.id;
-				}
+			for (var i = 0; i < watchedArray.length; i++) {
 
+			if (watchedArray[i].imdbID === imdbID) {
 				if (watchedArray.rating < 10) {
-					var notSoFavoriteObj = watchedArray.find(findType);
-					let id = notSoFavoriteObj.id;
-					updateFirebase(notSoFavoriteObj,id);
+					updateFirebase(watchedArray[i]);
 
 				} else {
-					var favObj = watchedArray.find(findType);
-					let id = favObj.id;
-					updateFirebase(favObj,id);
+				
+					updateFirebase(watchedArray[i]);
 				}
-
+			}
+}
 			resolve(favorites);
 		});
 	});
@@ -161,7 +158,8 @@ function setWatched(imdbID,rating) {
     //////////////////////////////////////////////
 
 
-function updateFirebase(watched,id) {	
+function updateFirebase(watched) {
+	let id = watched.id;
 	return new Promise((resolve,reject) => {
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies/${id}.json`,
@@ -170,6 +168,7 @@ function updateFirebase(watched,id) {
 			dataType: 'json'
 		});
 	});
+
 }
 
  //////////////////////////////////////////////
@@ -180,12 +179,10 @@ function updateFirebase(watched,id) {
 function loadWatched(watched,uid) {
 	return new Promise((resolve,reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="isWatched"&equalTo=${watched}`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
-				value.id = index;
-				if(value.uid === uid) {
-					console.log("wacthedvalue", value);
+				if( value.rating < 10) {
 					    return [value];
 					}
 					});
@@ -205,8 +202,7 @@ function loadFavorites(rating,uid) {
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
-				value.id = index;
-				if (value.uid === uid) {
+				if (value.uid === uid && value.rating === "10") {
 					    return [value];
 				}
 					});
@@ -216,34 +212,6 @@ function loadFavorites(rating,uid) {
 	});
 }
 module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 },{"./fb-config":2,"./movieCards.js":6,"./user.js":7}],2:[function(require,module,exports){
 "use strict";
@@ -354,7 +322,7 @@ $("#signOut").click(function (){
     //////////////////////////////////////////////
 $("#search").click(function () {
 	searcher();
-		$("#breadCrumbs").text("Movie History> Search Results");
+		$("#breadCrumbs").text("Movie History > Search Results");
 
 });
 
@@ -368,7 +336,7 @@ $("#query").keydown(function(e) {
 	if(e.keyCode === 13) { 
 	e.preventDefault();
 	searcher();
-	$("#breadCrumbs").text("Movie History> Search Results");
+	$("#breadCrumbs").text("Movie History > Search Results");
 
 	}
 });
@@ -380,9 +348,10 @@ $("#query").keydown(function(e) {
 
 $(document).on("click", ".addToListBtn", () => {
 	let ID = event.target.id;
+	console.log("ID", ID);
 	db.searchID(ID)
 	.then((movieObject) => {
-		console.log("movieObject", movieObject);
+		// console.log("movieObject", movieObject);
 		db.addToFirebase(movieObject);
 	});
 });
@@ -395,6 +364,9 @@ $("#showUntrackedBtn").click(function (){
 
 $("#showUnwatchedBtn").click(function (){
 	$(this).attr("selected", "selected");
+	$(this).toggleClass("filter");
+	$("#showWatchedBtn").removeClass("filter");
+	$("#favoritesBtn").removeClass("filter");
 	$("#query").val('');
 	userID = user.getUser();
 	db.getMoviesFromFirebase(userID);
@@ -403,14 +375,22 @@ $("#showUnwatchedBtn").click(function (){
 
 $("#showWatchedBtn").click(function (){
 	$(this).attr("selected", "selected");
+	$(this).addClass("filter");
+	$("#showUnwatchedBtn").removeClass("filter");
+	$("#favoritesBtn").removeClass("filter");
 	$("#query").val('');
 	let uid = user.getUser();
 	db.loadWatched(true,uid);
 	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
 });
 
+
 $("#favoritesBtn").click(function (){
 	$(this).attr("selected", "selected");
+	$("#showWatchedBtn").removeClass("filter");
+	$("#showUnwatchedBtn").removeClass("filter");
+	$(this).addClass("filter");
+
 	$("#query").val('');
 	let uid = user.getUser();
 	db.loadFavorites(10,uid);
@@ -421,16 +401,23 @@ $("#favoritesBtn").click(function (){
     //        Delete Event
     //////////////////////////////////////////////
 
+
 $(document).on("click", ".deleteBtn", (event) => {
 	let movieID = $(event.target).data("delete-id");
 	db.removeFromFirebase(movieID)
 	.then(()=>{
 		userID = user.getUser();
-		db.getMoviesFromFirebase(userID);
-	
+		if ($("#showWatchedBtn").hasClass("filter")) {
+			db.loadWatched(true,userID);
+		} else if ($("#favoritesBtn").hasClass("filter")) {
+			db.loadFavorites(10,userID);
+		} else {
+			db.getMoviesFromFirebase(userID);
+		}
 	});
 
 });
+
 
 //////////////////////////////////////////////
     //        Set Rating Event
@@ -446,7 +433,10 @@ $(document).on("click","div.br-widget *",(event) => {
 		} else if (index % 2 !== 0) {
 			 rating = value;
 		}
-		db.setWatched(imdbID,rating);
+		let uid = user.getUser();
+		console.log("imdbID", imdbID);
+				console.log("rating", rating);
+		db.setWatched(uid,imdbID,rating);
 	});
 });
 
@@ -519,30 +509,33 @@ let movieData = movieObj;
     //        Build Cards
     //////////////////////////////////////////////
     
+
      if (value.id === undefined) {
       currentDeleteButton = '';
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else if (value.isWatched === true || value.id === null) {
-      stars = '';
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Forget This Flick</a>`;
+    } else if (value.isWatched === true || value.rating) {
+      stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="btn deleteBtn btn-primary">Remove from Watchlist</a>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     }
+
     /*any poster address that contains ia or had a value of N/A returned no img so i replaced with ODB*/
+    
     if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
       value.Poster = 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg';
     }
 
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
-    <h2>${value.Title}</h2>
+        ${currentDeleteButton}
+    <h3>${value.Title}</h3>
     <img class="moviePoster" src="${value.Poster}">${currentActors}
     <div class="btn">
         ${addButton}
-        ${currentDeleteButton}
       </div>${stars}</div>`;
 
         //////////////////////////////////////////////
@@ -562,8 +555,10 @@ let movieData = movieObj;
   //////////////////////////////////////////////
   //        Star Rating jQuery Theme
   //////////////////////////////////////////////
+  
        $('.example').barrating('show', {
       theme: 'bootstrap-stars',
+
       onSelect: function(value, text,event) {
       console.log("event.target", this);
       favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
