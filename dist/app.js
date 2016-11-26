@@ -123,7 +123,8 @@ function removeFromFirebase(deleteID) {
     //        Set Users Watched/Favorites
     //////////////////////////////////////////////
 
-function setWatched(uid,imdbID,rating) {
+function setWatched(imdbID,rating) {
+	let uid = user.getUser();
 	return new Promise((resolve,reject) => {
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
@@ -293,6 +294,7 @@ let user = require("./user"),
 	Formatter = require("./formatUserInput"),
 	userID,
 	imdbID,
+	lastKnownRating = null,
 	rating,
 	recentSearch;
 
@@ -329,7 +331,8 @@ $("#search").click(function () {
 function searcher() {
 	let query = Formatter.allReplace($("#query").val());
 	recentSearch = query;
-	db.searchOMDB(query);
+	db.searchOMDB(query)
+	.then(setStarListeners);
 }
 
 $("#query").keydown(function(e) {
@@ -359,17 +362,19 @@ $(document).on("click", ".addToListBtn", () => {
 $("#showUntrackedBtn").click(function (){
 	$(this).attr("selected", "selected");
 	$("#breadCrumbs").text("Movie History > Untracked Flicks");
-	db.searchOMDB(recentSearch);
+	db.searchOMDB(recentSearch)
+	.then(setStarListeners);
 });
 
 $("#showUnwatchedBtn").click(function (){
 	$(this).attr("selected", "selected");
 	$(this).toggleClass("filter");
 	$("#showWatchedBtn").removeClass("filter");
-	$("#favoritesBtn").removeClass("filter");
+	$("#favoritesBtn").removeClass("filter");	 
 	$("#query").val('');
 	userID = user.getUser();
-	db.getMoviesFromFirebase(userID);
+	db.getMoviesFromFirebase(userID)
+	.then(setStarListeners);
 	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
@@ -380,7 +385,8 @@ $("#showWatchedBtn").click(function (){
 	$("#favoritesBtn").removeClass("filter");
 	$("#query").val('');
 	let uid = user.getUser();
-	db.loadWatched(true,uid);
+	db.loadWatched(true,uid)
+	.then(setStarListeners);
 	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
 });
 
@@ -393,7 +399,8 @@ $("#favoritesBtn").click(function (){
 
 	$("#query").val('');
 	let uid = user.getUser();
-	db.loadFavorites(10,uid);
+	db.loadFavorites(10,uid)
+	.then(setStarListeners);
 	$("#breadCrumbs").text("Movie History > Favorite Flicks");
 });
 
@@ -408,38 +415,43 @@ $(document).on("click", ".deleteBtn", (event) => {
 	.then(()=>{
 		userID = user.getUser();
 		if ($("#showWatchedBtn").hasClass("filter")) {
-			db.loadWatched(true,userID);
+			db.loadWatched(true,userID)
+			.then(setStarListeners);
 		} else if ($("#favoritesBtn").hasClass("filter")) {
-			db.loadFavorites(10,userID);
+			db.loadFavorites(10,userID)
+			.then(setStarListeners);
 		} else {
-			db.getMoviesFromFirebase(userID);
+			db.getMoviesFromFirebase(userID)
+			.then(setStarListeners);
 		}
 	});
 
 });
 
+function setStarListeners(){
+	let numStarBars = $('.example');
+	console.log("numStarBars", numStarBars);
+	console.log("numStarBars.length",numStarBars.length );
+	for (let i = 0; i < numStarBars.length; i++){
+		console.log("adding event listener to " + $(numStarBars[i]));
+		$(numStarBars[i]).change(starListener);
+	}
+}
 
-//////////////////////////////////////////////
-    //        Set Rating Event
-    //////////////////////////////////////////////
+function starListener(event){
+  
+  let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+	console.log("favoriteMovie", favoriteMovie);  
+  let rating = event.target.getAttribute('value');
+  if (rating === null || rating === lastKnownRating) {
+	  console.log("rating stayed the same:", rating);
+  } else {
+  	lastKnownRating = rating;
+  	console.log("rating changed to:", rating);
+  	db.setWatched(favoriteMovie,rating);
+  }
 
-
-$(document).on("click","div.br-widget *",(event) => {
-
-	$.each(cards.array, function(index,value) {
-
-		if (index % 2 === 0) {
-			imdbID = value;
-		} else if (index % 2 !== 0) {
-			 rating = value;
-		}
-		let uid = user.getUser();
-		console.log("imdbID", imdbID);
-				console.log("rating", rating);
-		db.setWatched(uid,imdbID,rating);
-	});
-});
-
+}
 
 
 
@@ -453,10 +465,13 @@ $(document).on("click","div.br-widget *",(event) => {
 },{"./dbInteraction":1,"./formatUserInput":4,"./movieCards.js":6,"./user":7}],6:[function(require,module,exports){
 "use strict";
 
-var db = require("./dbInteraction"),
-favoriteMovie,
-rating,
-array = [];
+// var db = require("./dbInteraction.js"),
+// var user = require("./user"),
+    // dbUtils = require("./dbUtils"),
+var favoriteMovie,
+    rating,
+    initRatings = [],
+    array = [];
 
 const OUTPUT = $("#movieOutput");
 
@@ -490,6 +505,8 @@ let movieData = movieObj;
   addButton;
   movieData.forEach((value, index) => {
 
+    initRatings[index] = value.rating;
+
     if (value.Actors === undefined) {
       currentActors = '';
     } else {
@@ -503,7 +520,7 @@ let movieData = movieObj;
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
-    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select></div>';
+    let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
 
     //////////////////////////////////////////////
     //        Build Cards
@@ -515,7 +532,7 @@ let movieData = movieObj;
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
     } else if (value.isWatched === true || value.rating) {
-      stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+      // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
       currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     } else {
@@ -550,39 +567,58 @@ let movieData = movieObj;
     outputString += cardsString;
     cardsString = '';
   });
+
   OUTPUT.append(outputString);
 
-  //////////////////////////////////////////////
-  //        Star Rating jQuery Theme
-  //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Star Rating jQuery Theme
+//////////////////////////////////////////////
+
+// $('select').barrating('show');
+// Shows the rating widget.
+
+// $('select').barrating('set', value);
+// Sets the value of the rating widget.
+// The value needs to exist in the underlying select field.
+
+// $('select').barrating('readonly', state);
+// Switches the read-only state to true or false.
+// $('select').barrating('clear');
+// Clears the rating.
+
+// $('select').barrating('destroy');
+// Destroys the rating widget.
   
-       $('.example').barrating('show', {
-      theme: 'bootstrap-stars',
+$('.example').each(function(index, item){
+  $(item).barrating('show', {
+    theme: 'bootstrap-stars',
+    initialRating: initRatings[index],
+    onSelect: function(value, text, event) {
+      
+      if (typeof(event) !== 'undefined') {
+        // rating was selected by a user
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+      } else {
+        // rating was selected programmatically
+      }
+    }
+  });
+});
 
-      onSelect: function(value, text,event) {
-      console.log("event.target", this);
-      favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-      console.log("favoriteMovie",favoriteMovie);
-      rating = value;
-      console.log("rating", rating);
-      array.push(favoriteMovie,rating);
 
-      /*had to throw an error here to get rating event to work
-      the star rating system was not very cooperative
-      may be a better way just wanted to get functionality going*/
-      throw new Error("stopping this shit");
 
-        }
-    });
+
 }
 
 module.exports = {cardBuilder, array};
 
-},{"./dbInteraction":1}],7:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 let firebase = require("./fb-config"),
-     provider = new firebase.auth.GoogleAuthProvider(),
-     currentUser = null;
+    provider = new firebase.auth.GoogleAuthProvider(),
+    currentUser = null;
 
 //listen for changed state
 firebase.auth().onAuthStateChanged(function(user){
@@ -606,8 +642,6 @@ function logOut(){
 function getUser(){
     return currentUser;
 }
-
-
 
 module.exports = {logInGoogle, logOut, getUser};
 },{"./fb-config":2}],8:[function(require,module,exports){
