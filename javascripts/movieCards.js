@@ -1,9 +1,12 @@
 "use strict";
 
-var db = require("./dbInteraction"),
-favoriteMovie,
-rating,
-array = [];
+// var db = require("./dbInteraction.js"),
+// var user = require("./user"),
+    // dbUtils = require("./dbUtils"),
+var favoriteMovie,
+    rating,
+    initRatings = [],
+    array = [];
 
 const OUTPUT = $("#movieOutput");
 
@@ -37,6 +40,8 @@ let movieData = movieObj;
   addButton;
   movieData.forEach((value, index) => {
 
+    initRatings[index] = value.rating;
+
     if (value.Actors === undefined) {
       currentActors = '';
     } else {
@@ -50,7 +55,7 @@ let movieData = movieObj;
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
-    let stars = '<div class="br-wrapper br-theme-fontawesome-stars"><select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select></div>';
+    let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
 
     //////////////////////////////////////////////
     //        Build Cards
@@ -62,7 +67,7 @@ let movieData = movieObj;
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
     } else if (value.isWatched === true || value.rating) {
-      stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+      // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
       currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
       addButton = '';
     } else {
@@ -97,30 +102,49 @@ let movieData = movieObj;
     outputString += cardsString;
     cardsString = '';
   });
+
   OUTPUT.append(outputString);
 
-  //////////////////////////////////////////////
-  //        Star Rating jQuery Theme
-  //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Star Rating jQuery Theme
+//////////////////////////////////////////////
+
+// $('select').barrating('show');
+// Shows the rating widget.
+
+// $('select').barrating('set', value);
+// Sets the value of the rating widget.
+// The value needs to exist in the underlying select field.
+
+// $('select').barrating('readonly', state);
+// Switches the read-only state to true or false.
+// $('select').barrating('clear');
+// Clears the rating.
+
+// $('select').barrating('destroy');
+// Destroys the rating widget.
   
-       $('.example').barrating('show', {
-      theme: 'bootstrap-stars',
+$('.example').each(function(index, item){
+  $(item).barrating('show', {
+    theme: 'bootstrap-stars',
+    initialRating: initRatings[index],
+    onSelect: function(value, text, event) {
+      
+      if (typeof(event) !== 'undefined') {
+        // rating was selected by a user
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+      } else {
+        // rating was selected programmatically
+      }
+    }
+  });
+});
 
-      onSelect: function(value, text,event) {
-      console.log("event.target", this);
-      favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-      console.log("favoriteMovie",favoriteMovie);
-      rating = value;
-      console.log("rating", rating);
-      array.push(favoriteMovie,rating);
 
-      /*had to throw an error here to get rating event to work
-      the star rating system was not very cooperative
-      may be a better way just wanted to get functionality going*/
-      throw new Error("stopping this shit");
 
-        }
-    });
+
 }
 
 module.exports = {cardBuilder, array};

@@ -122,7 +122,8 @@ function removeFromFirebase(deleteID) {
     //        Set Users Watched/Favorites
     //////////////////////////////////////////////
 
-function setWatched(uid,imdbID,rating) {
+function setWatched(imdbID,rating) {
+	let uid = user.getUser();
 	return new Promise((resolve,reject) => {
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
