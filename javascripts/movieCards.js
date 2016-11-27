@@ -25,7 +25,8 @@ let movieData = movieObj;
   if (movieData[0] === undefined) {
     movieData = [{
       Title: `No Results Found for "${$('#query').val()}"`,
-      Poster: 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg',
+      Poster: 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg',
+      // http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg
       id: null
     }];
   }
@@ -78,7 +79,7 @@ let movieData = movieObj;
     /*any poster address that contains ia or had a value of N/A returned no img so i replaced with ODB*/
     
     if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
-      value.Poster = 'http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg';
+      value.Poster = 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg';
     }
 
 
