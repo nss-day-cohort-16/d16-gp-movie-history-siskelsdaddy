@@ -201,6 +201,7 @@ function loadFavorites(rating,uid) {
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
 		}).done((userMovies) => {
+			console.log("userMovies", userMovies);
 			let returnedArray = $.map(userMovies, function(value, index) {
 				if (value.uid === uid && value.rating === "10") {
 					    return [value];
