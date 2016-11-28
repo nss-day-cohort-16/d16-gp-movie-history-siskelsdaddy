@@ -26,7 +26,7 @@ function searchOMDB(title) {
 				}).done((firebaseMovies)=>{
 					resolve(firebaseMovies);
 
-					let idArray = Object.keys(firebaseMovies); 
+					let idArray = Object.keys(firebaseMovies);
 					idArray.forEach(function(key){
 					  firebaseMovies[key].id = key;
 					});
@@ -143,7 +143,7 @@ function setWatched(imdbID,rating) {
 					updateFirebase(watchedArray[i]);
 
 				} else {
-				
+
 					updateFirebase(watchedArray[i]);
 				}
 			}
@@ -196,16 +196,16 @@ function loadWatched(watched,uid) {
     //       Load Users Fav Flicks
     //////////////////////////////////////////////
 
-function loadFavorites(rating,uid) {
-	return new Promise((resolve,reject) => {
+function loadFavorites(start, end, uid) {
+	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&startAt="${start}"&endAt="${end}"`,
 		}).done((userMovies) => {
 			console.log("userMovies", userMovies);
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if (value.uid === uid && value.rating === "10") {
+				if (value.uid === uid && value.rating <= start) {
 					    return [value];
-				}
+					}
 					});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);

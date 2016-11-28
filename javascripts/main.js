@@ -22,7 +22,7 @@ $("#signIn").click(function() {
     let user = result.user;
     $("#signIn").addClass("hide");
     $("#signOut").removeClass("hide");
-   
+
   });
 });
 
@@ -48,7 +48,7 @@ function searcher() {
 }
 
 $("#query").keydown(function(e) {
-	if(e.keyCode === 13) { 
+	if(e.keyCode === 13) {
 	e.preventDefault();
 	searcher();
 	$("#breadCrumbs").text("Movie History > Search Results");
@@ -82,7 +82,7 @@ $("#showUnwatchedBtn").click(function (){
 	$(this).attr("selected", "selected");
 	$(this).toggleClass("filter");
 	$("#showWatchedBtn").removeClass("filter");
-	$("#favoritesBtn").removeClass("filter");	 
+	$("#favoritesBtn").removeClass("filter");
 	$("#query").val('');
 	userID = user.getUser();
 	db.getMoviesFromFirebase(userID)
@@ -90,30 +90,43 @@ $("#showUnwatchedBtn").click(function (){
 	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
-$("#showWatchedBtn").click(function (){
-	$(this).attr("selected", "selected");
-	$(this).addClass("filter");
-	$("#showUnwatchedBtn").removeClass("filter");
-	$("#favoritesBtn").removeClass("filter");
-	$("#query").val('');
-	let uid = user.getUser();
-	db.loadWatched(true,uid)
-	.then(setStarListeners);
-	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
-});
-
-
-$("#favoritesBtn").click(function (){
-	$(this).attr("selected", "selected");
+$("#favoritesBtn10").click(function (){
+	$("#favMenu").attr("selected", "selected");
 	$("#showWatchedBtn").removeClass("filter");
 	$("#showUnwatchedBtn").removeClass("filter");
 	$(this).addClass("filter");
 
 	$("#query").val('');
 	let uid = user.getUser();
-	db.loadFavorites(10,uid)
+	db.loadFavorites(10,10,uid)
 	.then(setStarListeners);
-	$("#breadCrumbs").text("Movie History > Favorite Flicks");
+	$("#breadCrumbs").text("Movie History > Favorite Flicks > 10 Stars");
+});
+
+$("#favoritesBtn9").click(function (){
+  $("#favMenu").attr("selected", "selected");
+  $("#showWatchedBtn").removeClass("filter");
+  $("#showUnwatchedBtn").removeClass("filter");
+  $(this).addClass("filter");
+
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadFavorites(9,10,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Favorite Flicks > 9 Stars Or More");
+});
+
+$("#favoritesBtn8").click(function (){
+  $("#favMenu").attr("selected", "selected");
+  $("#showWatchedBtn").removeClass("filter");
+  $("#showUnwatchedBtn").removeClass("filter");
+  $(this).addClass("filter");
+
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadFavorites(8,10,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Favorite Flicks > 8 Stars Or More");
 });
 
  //////////////////////////////////////////////
@@ -130,7 +143,7 @@ $(document).on("click", ".deleteBtn", (event) => {
 			db.loadWatched(true,userID)
 			.then(setStarListeners);
 		} else if ($("#favoritesBtn").hasClass("filter")) {
-			db.loadFavorites(10,userID)
+			db.loadFavorites(10, 10,userID)
 			.then(setStarListeners);
 		} else {
 			db.getMoviesFromFirebase(userID)
@@ -151,9 +164,9 @@ function setStarListeners(){
 }
 
 function starListener(event){
-  
+
   let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-	console.log("favoriteMovie", favoriteMovie);  
+	console.log("favoriteMovie", favoriteMovie);
   let rating = event.target.getAttribute('value');
   if (rating === null || rating === lastKnownRating) {
 	  console.log("rating stayed the same:", rating);
