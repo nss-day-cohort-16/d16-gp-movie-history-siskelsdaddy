@@ -182,10 +182,10 @@ function loadWatched(watched,uid) {
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if( value.rating < 10) {
+				if( value.rating <= 10) {
 					    return [value];
-					}
-					});
+				}
+			});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);
 		});
@@ -199,11 +199,11 @@ function loadWatched(watched,uid) {
 function loadFavorites(start, end, uid) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&startAt="${start}"&endAt="${end}"`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"`,
 		}).done((userMovies) => {
 			console.log("userMovies", userMovies);
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if (value.uid === uid && value.rating <= start) {
+				if (value.uid === uid && value.rating >= start) {
 					    return [value];
 					}
 					});

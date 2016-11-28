@@ -73,6 +73,7 @@ $(document).on("click", ".addToListBtn", () => {
 
 $("#showUntrackedBtn").click(function (){
 	$(this).attr("selected", "selected");
+  $("#favMenu").removeClass('active');
 	$("#breadCrumbs").text("Movie History > Untracked Flicks");
 	db.searchOMDB(recentSearch)
 	.then(setStarListeners);
@@ -81,6 +82,7 @@ $("#showUntrackedBtn").click(function (){
 $("#showUnwatchedBtn").click(function (){
 	$(this).attr("selected", "selected");
 	$(this).toggleClass("filter");
+  $("#favMenu").removeClass('active');
 	$("#showWatchedBtn").removeClass("filter");
 	$("#favoritesBtn").removeClass("filter");
 	$("#query").val('');
@@ -90,8 +92,21 @@ $("#showUnwatchedBtn").click(function (){
 	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
+$("#showWatchedBtn").click(function (){
+  $(this).attr("selected", "selected");
+  $(this).addClass("filter");
+  $("#favMenu").removeClass('active');
+  $("#showUnwatchedBtn").removeClass("filter");
+  $("#favoritesBtn").removeClass("filter");
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadWatched(true,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
+});
+
 $("#favoritesBtn10").click(function (){
-	$("#favMenu").attr("selected", "selected");
+	$("#favMenu").addClass('active');
 	$("#showWatchedBtn").removeClass("filter");
 	$("#showUnwatchedBtn").removeClass("filter");
 	$(this).addClass("filter");
@@ -104,7 +119,7 @@ $("#favoritesBtn10").click(function (){
 });
 
 $("#favoritesBtn9").click(function (){
-  $("#favMenu").attr("selected", "selected");
+  $("#favMenu").addClass('active');
   $("#showWatchedBtn").removeClass("filter");
   $("#showUnwatchedBtn").removeClass("filter");
   $(this).addClass("filter");
@@ -117,7 +132,7 @@ $("#favoritesBtn9").click(function (){
 });
 
 $("#favoritesBtn8").click(function (){
-  $("#favMenu").attr("selected", "selected");
+  $("#favMenu").addClass('active');
   $("#showWatchedBtn").removeClass("filter");
   $("#showUnwatchedBtn").removeClass("filter");
   $(this).addClass("filter");
@@ -177,12 +192,3 @@ function starListener(event){
   }
 
 }
-
-
-
-
-
-
-
-
-
