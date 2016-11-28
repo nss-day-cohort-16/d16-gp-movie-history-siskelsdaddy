@@ -15,6 +15,7 @@
     </div>
     <nav class="navbar navbar-default">
       <div class="container-fluid">
+        <!-- test -->
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
@@ -50,7 +51,17 @@
       <a id="showUntrackedBtn" href="#" class="btn btn-primary">Show Untracked</a>
       <a id="showUnwatchedBtn" href="#" class="btn btn-primary">Show Unwatched</a>
       <a id="showWatchedBtn" href="#" class="btn btn-primary">Show Watched</a>
-      <a id="favoritesBtn" href="#" class="btn btn-primary">Favorites</a>
+      <!-- Favorites Dropdown -->
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Favorites <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a id="favoritesBtn" href="#">10 Stars</a></li>
+          <li><a href="#">9 Stars or More</a></li>
+          <li><a href="#">8 Stars or More</a></li>
+        </ul>
+      </div>
     </div>
     <div class="container" id="movieOutput"></div>
   </div>
