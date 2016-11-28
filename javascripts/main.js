@@ -8,7 +8,7 @@ let user = require("./user"),
 	imdbID,
 	lastKnownRating = null,
 	rating,
-	recentSearch;
+	recentSearch = "";
 
 
 
