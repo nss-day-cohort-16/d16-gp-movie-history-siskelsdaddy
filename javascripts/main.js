@@ -113,7 +113,7 @@ $("#favoritesBtn10").click(function (){
 
 	$("#query").val('');
 	let uid = user.getUser();
-	db.loadFavorites(10,10,uid)
+	db.loadFavorites(10,uid)
 	.then(setStarListeners);
 	$("#breadCrumbs").text("Movie History > Favorite Flicks > 10 Stars");
 });
@@ -126,7 +126,7 @@ $("#favoritesBtn9").click(function (){
 
   $("#query").val('');
   let uid = user.getUser();
-  db.loadFavorites(9,10,uid)
+  db.loadFavorites(9,uid)
   .then(setStarListeners);
   $("#breadCrumbs").text("Movie History > Favorite Flicks > 9 Stars Or More");
 });
@@ -139,7 +139,7 @@ $("#favoritesBtn8").click(function (){
 
   $("#query").val('');
   let uid = user.getUser();
-  db.loadFavorites(8,10,uid)
+  db.loadFavorites(8,uid)
   .then(setStarListeners);
   $("#breadCrumbs").text("Movie History > Favorite Flicks > 8 Stars Or More");
 });

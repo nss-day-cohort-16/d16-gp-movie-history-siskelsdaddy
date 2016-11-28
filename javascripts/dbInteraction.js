@@ -196,7 +196,7 @@ function loadWatched(watched,uid) {
     //       Load Users Fav Flicks
     //////////////////////////////////////////////
 
-function loadFavorites(start, end, uid) {
+function loadFavorites(start, uid) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"`,
