@@ -25,30 +25,29 @@ function searchOMDB(title) {
 					url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${currentUser}"`
 				}).done((firebaseMovies)=>{
 					resolve(firebaseMovies);
-console.log("firebaseMovies: ", firebaseMovies);
 					let idArray = Object.keys(firebaseMovies);
 					idArray.forEach(function(key){
 					  firebaseMovies[key].id = key;
 					});
-console.log("firebaseMovies: ", firebaseMovies);
 
 					let fbArray = $.map(firebaseMovies, function(value, index) {
 					    return [value];
 					});
-console.log("fbArray: ", fbArray);
 
 					let filteredMovies = $.grep(fbArray, (value, index) => {
 						// return value.Title === title;
 						return value.Title.toLowerCase().indexOf(title) > -1;
 					});
-console.log("filteredMovies: ", filteredMovies);
-					let filteredOmdb = $.grep(OMDBArray, (value, index) => {
-						filteredMovies.forEach(function (el, index,arr) {
-							/* body... */
-						})
+
+					OMDBArray.forEach(function(valO, indO) {
+						filteredMovies.forEach(function (valF, indF) {	
+							if (valO.imdbID === valF.imdbID){
+								OMDBArray.splice(indO, 1);
+							}
+						});
 					});
+					sumArray = sumArray.concat(OMDBArray);
 					sumArray = sumArray.concat(filteredMovies);
-					sumArray = sumArray.concat(filteredOmdb);
 					cards.cardBuilder(sumArray);
 				});
 			 });
