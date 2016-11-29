@@ -24,7 +24,7 @@ function cardBuilder(movieObj) {
 let movieData = movieObj;
   if (movieData[0] === undefined) {
     movieData = [{
-      Title: `No Results Found for "${$('#query').val()}"`,
+      Title: `No Results Found for ${$('#query').val()}`,
       Poster: 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg',
       // http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg
       id: null
@@ -37,10 +37,10 @@ let movieData = movieObj;
 
 
   let currentActors,
-  currentDeleteButton,
-  addButton;
+      currentDeleteButton,
+      addButton;
+      cardsString = `<div class="row">`;
   movieData.forEach((value, index) => {
-
     initRatings[index] = value.rating;
 
     if (value.Actors === undefined) {
@@ -49,22 +49,20 @@ let movieData = movieObj;
       currentActors = `<p>Actors: ${value.Actors}</p>`;
     }
 
-
     // if (index % 3 === 0) {
-      cardsString = `<div class="row">`;
     // }
 
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
     
-    let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
+    let stars = `<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>`;
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
 
-     if (value.id === undefined) {
+    if (value.id === undefined) {
       currentDeleteButton = '';
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
@@ -82,7 +80,6 @@ let movieData = movieObj;
     if (value.Poster.indexOf("ia") > -1 || value.Poster === "N/A") {
       value.Poster = 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg';
     }
-
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
         ${currentDeleteButton}
