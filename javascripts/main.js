@@ -68,7 +68,6 @@ $(document).on("click", ".addToListBtn", () => {
 		db.addToFirebase(movieObject);
 		$(`[data--imdb-id=${ID}]`).hide();
 	});
-
 });
 
 $("#showUntrackedBtn").click(function (){
