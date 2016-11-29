@@ -68,7 +68,9 @@ $(document).on("click", ".addToListBtn", () => {
 	.then((movieObject) => {
 		// console.log("movieObject", movieObject);
 		db.addToFirebase(movieObject);
+		$(`[data--imdb-id=${ID}]`).hide();
 	});
+
 });
 
 $("#showUntrackedBtn").click(function (){
@@ -153,6 +155,7 @@ function setStarListeners(){
 function starListener(event){
   
   let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+
 	console.log("favoriteMovie", favoriteMovie);  
   let rating = event.target.getAttribute('value');
   if (rating === null || rating === lastKnownRating) {
@@ -161,6 +164,8 @@ function starListener(event){
   	lastKnownRating = rating;
   	console.log("rating changed to:", rating);
   	db.setWatched(favoriteMovie,rating);
+  	$(`[data--imdb-id=${favoriteMovie}]`).hide();
+  	// $(`[.br-selected= ${event.target.closest}]`).hide();
   }
 
 }
