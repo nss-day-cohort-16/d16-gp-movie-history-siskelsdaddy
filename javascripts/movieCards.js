@@ -10,9 +10,9 @@ var favoriteMovie,
 
 const OUTPUT = $("#movieOutput");
 
-  //////////////////////////////////////////////
-    //        Card Builder Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Card Builder Logic
+//////////////////////////////////////////////
 
 function cardBuilder(movieObj) {
 
@@ -50,18 +50,19 @@ let movieData = movieObj;
     }
 
 
-    if (index % 3 === 0) {
+    // if (index % 3 === 0) {
       cardsString = `<div class="row">`;
-    }
+    // }
+
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
+    
     let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    
 
      if (value.id === undefined) {
       currentDeleteButton = '';
@@ -91,13 +92,14 @@ let movieData = movieObj;
         ${addButton}
       </div>${stars}</div>`;
 
-        //////////////////////////////////////////////
-    //        Closing Div Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Closing Div Logic
+//////////////////////////////////////////////
 
-    if ((index + 1) % 3 === 0) {
-      cardsString += `</div>`;
-    } else if (index === movieData.length - 1) {
+    // if ((index + 1) % 3 === 0) {
+      // cardsString += `</div>`;
+    // } else 
+    if (index === movieData.length - 1) {
       cardsString += `</div>`;
     }
     outputString += cardsString;
@@ -105,47 +107,10 @@ let movieData = movieObj;
   });
 
   OUTPUT.append(outputString);
-
-//////////////////////////////////////////////
-//        Star Rating jQuery Theme
-//////////////////////////////////////////////
-
-// $('select').barrating('show');
-// Shows the rating widget.
-
-// $('select').barrating('set', value);
-// Sets the value of the rating widget.
-// The value needs to exist in the underlying select field.
-
-// $('select').barrating('readonly', state);
-// Switches the read-only state to true or false.
-// $('select').barrating('clear');
-// Clears the rating.
-
-// $('select').barrating('destroy');
-// Destroys the rating widget.
-  
-$('.example').each(function(index, item){
-  $(item).barrating('show', {
-    theme: 'bootstrap-stars',
-    initialRating: initRatings[index],
-    onSelect: function(value, text, event) {
-      
-      if (typeof(event) !== 'undefined') {
-        // rating was selected by a user
-        let parentEl = $(event.target).parents()[1];
-        parentEl.firstChild.setAttribute('value', value);
-        $(parentEl.firstChild).barrating('set', value);
-      } else {
-        // rating was selected programmatically
-      }
-    }
-  });
-});
-
-
-
-
 }
 
-module.exports = {cardBuilder, array};
+function getInitRatings(){
+  return initRatings;
+}
+
+module.exports = {cardBuilder, array, getInitRatings};
