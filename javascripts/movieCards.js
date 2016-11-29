@@ -17,11 +17,12 @@ const OUTPUT = $("#movieOutput");
 function cardBuilder(movieObj) {
 
   if (Array.isArray(movieObj)) {
+    // Leave it alone
   } else {
     movieObj = [movieObj];
   }
 
-let movieData = movieObj;
+  let movieData = movieObj;
   if (movieData[0] === undefined) {
     movieData = [{
       Title: `No Results Found for ${$('#query').val()}`,
@@ -33,13 +34,14 @@ let movieData = movieObj;
 
   OUTPUT.html('');
   let cardsString = '',
-    outputString = '';
+      outputString = '';
 
 
   let currentActors,
       currentDeleteButton,
       addButton;
       cardsString = `<div class="row">`;
+  
   movieData.forEach((value, index) => {
     initRatings[index] = value.rating;
 
@@ -66,12 +68,12 @@ let movieData = movieObj;
       currentDeleteButton = '';
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else if (value.isWatched === true || value.rating) {
-      // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
-      addButton = '';
+    // } else if (value.isWatched === true || value.rating) {
+    //   // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+    //   currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
+    //   addButton = '';
     } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">X</a>`;
       addButton = '';
     }
 
@@ -83,11 +85,9 @@ let movieData = movieObj;
 
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
         ${currentDeleteButton}
-    <h3>${value.Title}</h3>
-    <img class="moviePoster" src="${value.Poster}">${currentActors}
-    <div class="btn">
-        ${addButton}
-      </div>${stars}</div>`;
+        <h3>${value.Title}</h3>
+        <img class="moviePoster" src="${value.Poster}">${currentActors}
+        <div class="btn">${addButton}</div>${stars}</div>`;
 
 //////////////////////////////////////////////
 //        Closing Div Logic
@@ -99,10 +99,11 @@ let movieData = movieObj;
     if (index === movieData.length - 1) {
       cardsString += `</div>`;
     }
+console.log("card generated: ", cardsString);
     outputString += cardsString;
     cardsString = '';
+console.log("output string: ", outputString);
   });
-
   OUTPUT.append(outputString);
 }
 

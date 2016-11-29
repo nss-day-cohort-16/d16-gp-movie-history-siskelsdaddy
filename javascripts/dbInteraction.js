@@ -39,8 +39,8 @@ function searchOMDB(title) {
 						return value.Title.toLowerCase().indexOf(title) > -1;
 					});
 
-					OMDBArray.forEach(function(valO, indO) {
-						filteredMovies.forEach(function (valF, indF) {	
+					filteredMovies.forEach(function (valF, indF) {	
+						OMDBArray.forEach(function(valO, indO) {
 							if (valO.imdbID === valF.imdbID){
 								OMDBArray.splice(indO, 1);
 							}
@@ -48,9 +48,10 @@ function searchOMDB(title) {
 					});
 					sumArray = sumArray.concat(OMDBArray);
 					sumArray = sumArray.concat(filteredMovies);
+console.log("the array we send to builder: ", sumArray);
 					cards.cardBuilder(sumArray);
-		  		$('.example').hide();
-				  $('.example').parent().append("<p>In your Collection</p>");
+		  		// $('.example').hide();
+				  // $('.example').parent().append("<p>In your Collection</p>");
 				});
 			 });
 
