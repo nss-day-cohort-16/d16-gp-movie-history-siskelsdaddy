@@ -10,21 +10,22 @@ var favoriteMovie,
 
 const OUTPUT = $("#movieOutput");
 
-  //////////////////////////////////////////////
-    //        Card Builder Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Card Builder Logic
+//////////////////////////////////////////////
 
 function cardBuilder(movieObj) {
 
   if (Array.isArray(movieObj)) {
+    // Leave it alone
   } else {
     movieObj = [movieObj];
   }
 
-let movieData = movieObj;
+  let movieData = movieObj;
   if (movieData[0] === undefined) {
     movieData = [{
-      Title: `No Results Found for "${$('#query').val()}"`,
+      Title: `No Results Found for ${$('#query').val()}`,
       Poster: 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg',
       // http://img2-ak.lst.fm/i/u/770x0/798712572d104cb39411b4ad986fc8cb.jpg
       id: null
@@ -33,14 +34,15 @@ let movieData = movieObj;
 
   OUTPUT.html('');
   let cardsString = '',
-    outputString = '';
+      outputString = '';
 
 
   let currentActors,
-  currentDeleteButton,
-  addButton;
+      currentDeleteButton,
+      addButton;
+      cardsString = `<div class="row">`;
+  
   movieData.forEach((value, index) => {
-
     initRatings[index] = value.rating;
 
     if (value.Actors === undefined) {
@@ -49,30 +51,29 @@ let movieData = movieObj;
       currentActors = `<p>Actors: ${value.Actors}</p>`;
     }
 
+    // if (index % 3 === 0) {
+    // }
 
-    if (index % 3 === 0) {
-      cardsString = `<div class="row">`;
-    }
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
-    let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
+    
+    let stars = `<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>`;
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    
 
-     if (value.id === undefined) {
+    if (value.id === undefined) {
       currentDeleteButton = '';
       stars = '';
       addButton = `<a id="${value.imdbID}" href="#" class="btn addToListBtn btn-primary">Add to Watchlist</a>`;
-    } else if (value.isWatched === true || value.rating) {
-      // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
-      addButton = '';
+    // } else if (value.isWatched === true || value.rating) {
+    //   // stars = `<p>You gave this ${value.rating}/10 stars</p>`;
+    //   currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
+    //   addButton = '';
     } else {
-      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">x</a>`;
+      currentDeleteButton = `<a data-delete-id="${value.id}" href="#" class="close deleteBtn ">X</a>`;
       addButton = '';
     }
 
@@ -82,70 +83,30 @@ let movieData = movieObj;
       value.Poster = 'https://thumbs.dreamstime.com/t/film-clapper-board-video-icon-30142238.jpg';
     }
 
-
     cardsString += `<div id="movieCard--${index}" data--imdb-id="${value.imdbID}" class="col-md-3 col-md-offset-1 movieCard">
         ${currentDeleteButton}
-    <h3>${value.Title}</h3>
-    <img class="moviePoster" src="${value.Poster}">${currentActors}
-    <div class="btn">
-        ${addButton}
-      </div>${stars}</div>`;
+        <h3>${value.Title}</h3>
+        <img class="moviePoster" src="${value.Poster}">${currentActors}
+        <div class="btn">${addButton}</div>${stars}</div>`;
 
-        //////////////////////////////////////////////
-    //        Closing Div Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Closing Div Logic
+//////////////////////////////////////////////
 
-    if ((index + 1) % 3 === 0) {
-      cardsString += `</div>`;
-    } else if (index === movieData.length - 1) {
+    // if ((index + 1) % 3 === 0) {
+      // cardsString += `</div>`;
+    // } else 
+    if (index === movieData.length - 1) {
       cardsString += `</div>`;
     }
     outputString += cardsString;
     cardsString = '';
   });
-
   OUTPUT.append(outputString);
-
-//////////////////////////////////////////////
-//        Star Rating jQuery Theme
-//////////////////////////////////////////////
-
-// $('select').barrating('show');
-// Shows the rating widget.
-
-// $('select').barrating('set', value);
-// Sets the value of the rating widget.
-// The value needs to exist in the underlying select field.
-
-// $('select').barrating('readonly', state);
-// Switches the read-only state to true or false.
-// $('select').barrating('clear');
-// Clears the rating.
-
-// $('select').barrating('destroy');
-// Destroys the rating widget.
-  
-$('.example').each(function(index, item){
-  $(item).barrating('show', {
-    theme: 'bootstrap-stars',
-    initialRating: initRatings[index],
-    onSelect: function(value, text, event) {
-      
-      if (typeof(event) !== 'undefined') {
-        // rating was selected by a user
-        let parentEl = $(event.target).parents()[1];
-        parentEl.firstChild.setAttribute('value', value);
-        $(parentEl.firstChild).barrating('set', value);
-      } else {
-        // rating was selected programmatically
-      }
-    }
-  });
-});
-
-
-
-
 }
 
-module.exports = {cardBuilder, array};
+function getInitRatings(){
+  return initRatings;
+}
+
+module.exports = {cardBuilder, array, getInitRatings};

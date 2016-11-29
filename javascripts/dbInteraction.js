@@ -5,7 +5,8 @@ let firebase = require("./fb-config"),
 	user = require("./user.js");
 
 	var favoriteArray = [],
-		notSoFavoriteArray = [];
+			notSoFavoriteArray = [],
+			OMDBOnly = [];
 
   //////////////////////////////////////////////
     //        Open Search Function
@@ -25,8 +26,7 @@ function searchOMDB(title) {
 					url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${currentUser}"`
 				}).done((firebaseMovies)=>{
 					resolve(firebaseMovies);
-
-					let idArray = Object.keys(firebaseMovies); 
+					let idArray = Object.keys(firebaseMovies);
 					idArray.forEach(function(key){
 					  firebaseMovies[key].id = key;
 					});
@@ -35,17 +35,44 @@ function searchOMDB(title) {
 					    return [value];
 					});
 
-
 					let filteredMovies = $.grep(fbArray, (value, index) => {
-						return value.Title === title;
+						// return value.Title === title;
+						return value.Title.toLowerCase().indexOf(title) > -1;
 					});
-					sumArray = sumArray.concat(filteredMovies);
+
+					filteredMovies.forEach(function (valF, indF) {	
+						OMDBArray.forEach(function(valO, indO) {
+							if (valO.imdbID === valF.imdbID){
+								OMDBArray.splice(indO, 1);
+							}
+						});
+					});
 					sumArray = sumArray.concat(OMDBArray);
+					OMDBOnly = OMDBArray;
+					sumArray = sumArray.concat(filteredMovies);
 					cards.cardBuilder(sumArray);
+		  		$('.example').hide();
+				  $('.example').parent().append("<p>In your Collection</p>");
 				});
 			 });
+
     	});
 	});
+}
+
+function searchOMDBOnly(title) {
+	let sumArray = [];
+	return new Promise(function(resolve,reject) {
+		$.ajax({
+			url: `http://www.omdbapi.com/?s="${title}"&y=&plot=short&r=json`
+		}).done(function(movieData) {
+			resolve(movieData);
+			let currentUser = user.getUser();
+			let OMDBArray = movieData.Search;
+			sumArray = sumArray.concat(OMDBArray);
+			cards.cardBuilder(OMDBOnly);
+		});
+  });
 }
 
 
@@ -143,7 +170,7 @@ function setWatched(imdbID,rating) {
 					updateFirebase(watchedArray[i]);
 
 				} else {
-				
+
 					updateFirebase(watchedArray[i]);
 				}
 			}
@@ -182,10 +209,10 @@ function loadWatched(watched,uid) {
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if( value.rating < 10) {
+				if( value.rating <= 10) {
 					    return [value];
-					}
-					});
+				}
+			});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);
 		});
@@ -196,20 +223,20 @@ function loadWatched(watched,uid) {
     //       Load Users Fav Flicks
     //////////////////////////////////////////////
 
-function loadFavorites(rating,uid) {
-	return new Promise((resolve,reject) => {
+function loadFavorites(start, uid) {
+	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"`,
 		}).done((userMovies) => {
 			console.log("userMovies", userMovies);
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if (value.uid === uid && value.rating === "10") {
+				if (value.uid === uid && value.rating >= start) {
 					    return [value];
-				}
+					}
 					});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);
 		});
 	});
 }
-module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
+module.exports = {searchOMDB, searchOMDBOnly, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
