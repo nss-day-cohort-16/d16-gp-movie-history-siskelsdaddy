@@ -27,7 +27,7 @@ function searchOMDB(title) {
 				}).done((firebaseMovies)=>{
 					resolve(firebaseMovies);
 
-					let idArray = Object.keys(firebaseMovies); 
+					let idArray = Object.keys(firebaseMovies);
 					idArray.forEach(function(key){
 					  firebaseMovies[key].id = key;
 					});
@@ -144,7 +144,7 @@ function setWatched(imdbID,rating) {
 					updateFirebase(watchedArray[i]);
 
 				} else {
-				
+
 					updateFirebase(watchedArray[i]);
 				}
 			}
@@ -183,10 +183,10 @@ function loadWatched(watched,uid) {
 			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="uid"&equalTo="${uid}"`,
 		}).done((userMovies) => {
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if( value.rating < 10) {
+				if( value.rating <= 10) {
 					    return [value];
-					}
-					});
+				}
+			});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);
 		});
@@ -197,16 +197,16 @@ function loadWatched(watched,uid) {
     //       Load Users Fav Flicks
     //////////////////////////////////////////////
 
-function loadFavorites(rating,uid) {
-	return new Promise((resolve,reject) => {
+function loadFavorites(start, uid) {
+	return new Promise((resolve, reject) => {
 		$.ajax({
-			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"&equalTo="${rating}"`,
+			url: `https://moviehistory-f323f.firebaseio.com/movies.json?orderBy="rating"`,
 		}).done((userMovies) => {
 			console.log("userMovies", userMovies);
 			let returnedArray = $.map(userMovies, function(value, index) {
-				if (value.uid === uid && value.rating === "10") {
+				if (value.uid === uid && value.rating >= start) {
 					    return [value];
-				}
+					}
 					});
 			cards.cardBuilder(returnedArray);
 			resolve(userMovies);
@@ -290,20 +290,20 @@ module.exports = Formatter;
 "use strict";
 
 let user = require("./user"),
-	db = require("./dbInteraction"),
-	cards = require("./movieCards.js"),
-	Formatter = require("./formatUserInput"),
-	userID,
-	imdbID,
-	lastKnownRating = null,
-	rating,
-	recentSearch = "";
+    db = require("./dbInteraction"),
+    cards = require("./movieCards.js"),
+    Formatter = require("./formatUserInput"),
+    userID,
+    imdbID,
+    lastKnownRating = null,
+    rating,
+    recentSearch = "",
+    initRatings = cards.getInitRatings();
 
+//////////////////////////////////////////////
+//        Auth/Sign-In
+//////////////////////////////////////////////
 
-
- //////////////////////////////////////////////
-    //        Auth/Sign-In
-    //////////////////////////////////////////////
 $("#signIn").click(function() {
   console.log("authenticate");
   user.logInGoogle()
@@ -311,158 +311,181 @@ $("#signIn").click(function() {
     let user = result.user;
     $("#signIn").addClass("hide");
     $("#signOut").removeClass("hide");
-   
   });
 });
 
 $("#signOut").click(function (){
-	user.logOut();
-	location.reload();
+  user.logOut();
+  location.reload();
 });
 
- //////////////////////////////////////////////
-    //        Search Events
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Search Events
+//////////////////////////////////////////////
 $("#search").click(function () {
-	searcher();
-		$("#breadCrumbs").text("Movie History > Search Results");
+  searcher();
+    $("#breadCrumbs").text("Movie History > Search Results");
 
 });
 
 function searcher() {
-	let query = Formatter.allReplace($("#query").val());
-	recentSearch = query;
-	db.searchOMDB(query)
-	.then(setStarListeners);
+  let query = Formatter.allReplace($("#query").val());
+  recentSearch = query;
+  db.searchOMDB(query)
+  .then(setStarListeners);
 }
 
 $("#query").keydown(function(e) {
-	if(e.keyCode === 13) { 
-	e.preventDefault();
-	searcher();
-	$("#breadCrumbs").text("Movie History > Search Results");
+  if(e.keyCode === 13) {
+  e.preventDefault();
+  searcher();
+  $("#breadCrumbs").text("Movie History > Search Results");
 
-	}
+  }
 });
 
-
- //////////////////////////////////////////////
-    //       Filter Event Listeners
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//       Filter Event Listeners
+//////////////////////////////////////////////
 
 $(document).on("click", ".addToListBtn", () => {
-	let ID = event.target.id;
-	console.log("ID", ID);
-	db.searchID(ID)
-	.then((movieObject) => {
-		// console.log("movieObject", movieObject);
-		db.addToFirebase(movieObject);
-	});
+  let ID = event.target.id;
+  console.log("ID", ID);
+  db.searchID(ID)
+  .then((movieObject) => {
+    // console.log("movieObject", movieObject);
+    db.addToFirebase(movieObject);
+    $(`[data--imdb-id=${ID}]`).hide();
+  });
 });
 
 $("#showUntrackedBtn").click(function (){
-	$(this).attr("selected", "selected");
-	$("#breadCrumbs").text("Movie History > Untracked Flicks");
-	db.searchOMDB(recentSearch)
-	.then(setStarListeners);
+  $(this).attr("selected", "selected");
+  $("#favMenu").removeClass('active');
+  $("#breadCrumbs").text("Movie History > Untracked Flicks");
+  db.searchOMDB(recentSearch)
+  .then(setStarListeners);
 });
 
 $("#showUnwatchedBtn").click(function (){
-	$(this).attr("selected", "selected");
-	$(this).toggleClass("filter");
-	$("#showWatchedBtn").removeClass("filter");
-	$("#favoritesBtn").removeClass("filter");	 
-	$("#query").val('');
-	userID = user.getUser();
-	db.getMoviesFromFirebase(userID)
-	.then(setStarListeners);
-	$("#breadCrumbs").text("Movie History > Unwatched Flicks");
+  $(this).attr("selected", "selected");
+  $(this).toggleClass("filter");
+  $("#favMenu").removeClass('active');
+  $("#showWatchedBtn").removeClass("filter");
+  $("#favoritesBtn").removeClass("filter");
+  $("#query").val('');
+  userID = user.getUser();
+  db.getMoviesFromFirebase(userID)
+  .then(function setStarListeners(){
+  $('.example').each(function(index, item){
+    $(item).barrating('show', {
+      theme: 'bootstrap-stars',
+      initialRating: initRatings[index],
+      silent: true,
+      onSelect: function(value, text, event) {
+        let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+        db.setWatched(favoriteMovie, value);
+         $(`[data--imdb-id=${favoriteMovie}]`).hide();
+      }
+    });
+  });
+});
+  $("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
 $("#showWatchedBtn").click(function (){
-	$(this).attr("selected", "selected");
-	$(this).addClass("filter");
-	$("#showUnwatchedBtn").removeClass("filter");
-	$("#favoritesBtn").removeClass("filter");
-	$("#query").val('');
-	let uid = user.getUser();
-	db.loadWatched(true,uid)
-	.then(setStarListeners);
-	$("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
+  $(this).attr("selected", "selected");
+  $(this).addClass("filter");
+  $("#favMenu").removeClass('active');
+  $("#showUnwatchedBtn").removeClass("filter");
+  $("#favoritesBtn").removeClass("filter");
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadWatched(true,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Not So Favorite Flicks");
 });
 
+$("#favoritesBtn10").click(function (){
+  $("#favMenu").addClass('active');
+  $("#showWatchedBtn").removeClass("filter");
+  $("#showUnwatchedBtn").removeClass("filter");
+  $(this).addClass("filter");
 
-$("#favoritesBtn").click(function (){
-	$(this).attr("selected", "selected");
-	$("#showWatchedBtn").removeClass("filter");
-	$("#showUnwatchedBtn").removeClass("filter");
-	$(this).addClass("filter");
-
-	$("#query").val('');
-	let uid = user.getUser();
-	db.loadFavorites(10,uid)
-	.then(setStarListeners);
-	$("#breadCrumbs").text("Movie History > Favorite Flicks");
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadFavorites(10,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Favorite Flicks > 10 Stars");
 });
 
- //////////////////////////////////////////////
-    //        Delete Event
-    //////////////////////////////////////////////
+$("#favoritesBtn9").click(function (){
+  $("#favMenu").addClass('active');
+  $("#showWatchedBtn").removeClass("filter");
+  $("#showUnwatchedBtn").removeClass("filter");
+  $(this).addClass("filter");
 
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadFavorites(9,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Favorite Flicks > 9 Stars Or More");
+});
+
+$("#favoritesBtn8").click(function (){
+  $("#favMenu").addClass('active');
+  $("#showWatchedBtn").removeClass("filter");
+  $("#showUnwatchedBtn").removeClass("filter");
+  $(this).addClass("filter");
+
+  $("#query").val('');
+  let uid = user.getUser();
+  db.loadFavorites(8,uid)
+  .then(setStarListeners);
+  $("#breadCrumbs").text("Movie History > Favorite Flicks > 8 Stars Or More");
+});
+
+//////////////////////////////////////////////
+//        Delete Event
+//////////////////////////////////////////////
 
 $(document).on("click", ".deleteBtn", (event) => {
-	let movieID = $(event.target).data("delete-id");
-	db.removeFromFirebase(movieID)
-	.then(()=>{
-		userID = user.getUser();
-		if ($("#showWatchedBtn").hasClass("filter")) {
-			db.loadWatched(true,userID)
-			.then(setStarListeners);
-		} else if ($("#favoritesBtn").hasClass("filter")) {
-			db.loadFavorites(10,userID)
-			.then(setStarListeners);
-		} else {
-			db.getMoviesFromFirebase(userID)
-			.then(setStarListeners);
-		}
-	});
-
+  let movieID = $(event.target).data("delete-id");
+  db.removeFromFirebase(movieID)
+  .then(()=>{
+    userID = user.getUser();
+    if ($("#showWatchedBtn").hasClass("filter")) {
+      db.loadWatched(true,userID)
+      .then(setStarListeners);
+    } else if ($("#favoritesBtn").hasClass("filter")) {
+      db.loadFavorites(10, 10,userID)
+      .then(setStarListeners);
+    } else {
+      db.getMoviesFromFirebase(userID)
+      .then(setStarListeners);
+    }
+  });
 });
 
 function setStarListeners(){
-	let numStarBars = $('.example');
-	console.log("numStarBars", numStarBars);
-	console.log("numStarBars.length",numStarBars.length );
-	for (let i = 0; i < numStarBars.length; i++){
-		console.log("adding event listener to " + $(numStarBars[i]));
-		$(numStarBars[i]).change(starListener);
-	}
+  $('.example').each(function(index, item){
+    $(item).barrating('show', {
+      theme: 'bootstrap-stars',
+      initialRating: initRatings[index],
+      silent: true,
+      onSelect: function(value, text, event) {
+        let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+        db.setWatched(favoriteMovie, value);
+      }
+    });
+  });
 }
-
-function starListener(event){
-  
-  let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-	console.log("favoriteMovie", favoriteMovie);  
-  let rating = event.target.getAttribute('value');
-  if (rating === null || rating === lastKnownRating) {
-	  console.log("rating stayed the same:", rating);
-  } else {
-  	lastKnownRating = rating;
-  	console.log("rating changed to:", rating);
-  	db.setWatched(favoriteMovie,rating);
-  }
-
-}
-
-
-
-
-
-
-
-
-
-
 },{"./dbInteraction":1,"./formatUserInput":4,"./movieCards.js":6,"./user":7}],6:[function(require,module,exports){
 "use strict";
 
@@ -476,9 +499,9 @@ var favoriteMovie,
 
 const OUTPUT = $("#movieOutput");
 
-  //////////////////////////////////////////////
-    //        Card Builder Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Card Builder Logic
+//////////////////////////////////////////////
 
 function cardBuilder(movieObj) {
 
@@ -516,18 +539,19 @@ let movieData = movieObj;
     }
 
 
-    if (index % 3 === 0) {
+    // if (index % 3 === 0) {
       cardsString = `<div class="row">`;
-    }
+    // }
+
     //////////////////////////////////////////////
     //        Star rating variable
     //////////////////////////////////////////////
+    
     let stars = '<select class="example"><option id="opt" value=""></option><option id="opt" value="1">1</option><option id="opt" value="2">2</option><option id="opt" value="3">3</option><option id="opt" value="4">4</option><option id="opt" value="5">5</option><option id="opt" value="6">6</option><option id="opt" value="7">7</option><option id="opt" value="8">8</option><option id="opt" value="9">9</option><option id="opt" value="10">10</option></select>';
 
     //////////////////////////////////////////////
     //        Build Cards
     //////////////////////////////////////////////
-    
 
      if (value.id === undefined) {
       currentDeleteButton = '';
@@ -557,13 +581,14 @@ let movieData = movieObj;
         ${addButton}
       </div>${stars}</div>`;
 
-        //////////////////////////////////////////////
-    //        Closing Div Logic
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Closing Div Logic
+//////////////////////////////////////////////
 
-    if ((index + 1) % 3 === 0) {
-      cardsString += `</div>`;
-    } else if (index === movieData.length - 1) {
+    // if ((index + 1) % 3 === 0) {
+      // cardsString += `</div>`;
+    // } else 
+    if (index === movieData.length - 1) {
       cardsString += `</div>`;
     }
     outputString += cardsString;
@@ -571,50 +596,13 @@ let movieData = movieObj;
   });
 
   OUTPUT.append(outputString);
-
-//////////////////////////////////////////////
-//        Star Rating jQuery Theme
-//////////////////////////////////////////////
-
-// $('select').barrating('show');
-// Shows the rating widget.
-
-// $('select').barrating('set', value);
-// Sets the value of the rating widget.
-// The value needs to exist in the underlying select field.
-
-// $('select').barrating('readonly', state);
-// Switches the read-only state to true or false.
-// $('select').barrating('clear');
-// Clears the rating.
-
-// $('select').barrating('destroy');
-// Destroys the rating widget.
-  
-$('.example').each(function(index, item){
-  $(item).barrating('show', {
-    theme: 'bootstrap-stars',
-    initialRating: initRatings[index],
-    onSelect: function(value, text, event) {
-      
-      if (typeof(event) !== 'undefined') {
-        // rating was selected by a user
-        let parentEl = $(event.target).parents()[1];
-        parentEl.firstChild.setAttribute('value', value);
-        $(parentEl.firstChild).barrating('set', value);
-      } else {
-        // rating was selected programmatically
-      }
-    }
-  });
-});
-
-
-
-
 }
 
-module.exports = {cardBuilder, array};
+function getInitRatings(){
+  return initRatings;
+}
+
+module.exports = {cardBuilder, array, getInitRatings};
 
 },{}],7:[function(require,module,exports){
 "use strict";
@@ -627,9 +615,13 @@ firebase.auth().onAuthStateChanged(function(user){
     if (user){
         currentUser = user.uid;
         console.log("current user Logged in?", currentUser);
+        $("#signIn").addClass("hide");
+        $("#signOut").removeClass("hide");
     }else {
         currentUser = null;
         console.log("current user NOT logged in:", currentUser);
+        $("#signOut").addClass("hide");
+        $("#signIn").removeClass("hide");
     }
 });
 
