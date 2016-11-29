@@ -74,7 +74,7 @@ $("#showUntrackedBtn").click(function (){
   $(this).attr("selected", "selected");
   $("#favMenu").removeClass('active');
   $("#breadCrumbs").text("Movie History > Untracked Flicks");
-  db.searchOMDB(recentSearch)
+  db.searchOMDBOnly(recentSearch)
   .then(setStarListeners);
 });
 

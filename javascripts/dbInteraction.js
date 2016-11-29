@@ -5,7 +5,8 @@ let firebase = require("./fb-config"),
 	user = require("./user.js");
 
 	var favoriteArray = [],
-		notSoFavoriteArray = [];
+			notSoFavoriteArray = [],
+			OMDBOnly = [];
 
   //////////////////////////////////////////////
     //        Open Search Function
@@ -47,6 +48,7 @@ function searchOMDB(title) {
 						});
 					});
 					sumArray = sumArray.concat(OMDBArray);
+					OMDBOnly = OMDBArray;
 					sumArray = sumArray.concat(filteredMovies);
 					cards.cardBuilder(sumArray);
 		  		$('.example').hide();
@@ -56,6 +58,21 @@ function searchOMDB(title) {
 
     	});
 	});
+}
+
+function searchOMDBOnly(title) {
+	let sumArray = [];
+	return new Promise(function(resolve,reject) {
+		$.ajax({
+			url: `http://www.omdbapi.com/?s="${title}"&y=&plot=short&r=json`
+		}).done(function(movieData) {
+			resolve(movieData);
+			let currentUser = user.getUser();
+			let OMDBArray = movieData.Search;
+			sumArray = sumArray.concat(OMDBArray);
+			cards.cardBuilder(OMDBOnly);
+		});
+  });
 }
 
 
@@ -222,4 +239,4 @@ function loadFavorites(start, uid) {
 		});
 	});
 }
-module.exports = {searchOMDB, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
+module.exports = {searchOMDB, searchOMDBOnly, searchID, addToFirebase, removeFromFirebase, getMoviesFromFirebase, setWatched, loadFavorites, loadWatched};
