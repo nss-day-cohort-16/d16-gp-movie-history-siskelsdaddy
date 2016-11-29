@@ -1,20 +1,20 @@
 "use strict";
 
 let user = require("./user"),
-	db = require("./dbInteraction"),
-	cards = require("./movieCards.js"),
-	Formatter = require("./formatUserInput"),
-	userID,
-	imdbID,
-	lastKnownRating = null,
-	rating,
-	recentSearch = "";
+    db = require("./dbInteraction"),
+    cards = require("./movieCards.js"),
+    Formatter = require("./formatUserInput"),
+    userID,
+    imdbID,
+    lastKnownRating = null,
+    rating,
+    recentSearch = "",
+    initRatings = cards.getInitRatings();
 
+//////////////////////////////////////////////
+//        Auth/Sign-In
+//////////////////////////////////////////////
 
-
- //////////////////////////////////////////////
-    //        Auth/Sign-In
-    //////////////////////////////////////////////
 $("#signIn").click(function() {
   console.log("authenticate");
   user.logInGoogle()
@@ -22,7 +22,6 @@ $("#signIn").click(function() {
     let user = result.user;
     $("#signIn").addClass("hide");
     $("#signOut").removeClass("hide");
-
   });
 });
 
@@ -31,9 +30,9 @@ $("#signOut").click(function (){
 	location.reload();
 });
 
- //////////////////////////////////////////////
-    //        Search Events
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//        Search Events
+//////////////////////////////////////////////
 $("#search").click(function () {
 	searcher();
 		$("#breadCrumbs").text("Movie History > Search Results");
@@ -56,10 +55,9 @@ $("#query").keydown(function(e) {
 	}
 });
 
-
- //////////////////////////////////////////////
-    //       Filter Event Listeners
-    //////////////////////////////////////////////
+//////////////////////////////////////////////
+//       Filter Event Listeners
+//////////////////////////////////////////////
 
 $(document).on("click", ".addToListBtn", () => {
 	let ID = event.target.id;
@@ -144,10 +142,9 @@ $("#favoritesBtn8").click(function (){
   $("#breadCrumbs").text("Movie History > Favorite Flicks > 8 Stars Or More");
 });
 
- //////////////////////////////////////////////
-    //        Delete Event
-    //////////////////////////////////////////////
-
+//////////////////////////////////////////////
+//        Delete Event
+//////////////////////////////////////////////
 
 $(document).on("click", ".deleteBtn", (event) => {
 	let movieID = $(event.target).data("delete-id");
@@ -165,30 +162,22 @@ $(document).on("click", ".deleteBtn", (event) => {
 			.then(setStarListeners);
 		}
 	});
-
 });
 
 function setStarListeners(){
-	let numStarBars = $('.example');
-	console.log("numStarBars", numStarBars);
-	console.log("numStarBars.length",numStarBars.length );
-	for (let i = 0; i < numStarBars.length; i++){
-		console.log("adding event listener to " + $(numStarBars[i]));
-		$(numStarBars[i]).change(starListener);
-	}
+  $('.example').each(function(index, item){
+    $(item).barrating('show', {
+      theme: 'bootstrap-stars',
+      initialRating: initRatings[index],
+      silent: true,
+      onSelect: function(value, text, event) {
+        let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+        db.setWatched(favoriteMovie, value);
+      }
+    });
+  });
 }
 
-function starListener(event){
-
-  let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-	console.log("favoriteMovie", favoriteMovie);
-  let rating = event.target.getAttribute('value');
-  if (rating === null || rating === lastKnownRating) {
-	  console.log("rating stayed the same:", rating);
-  } else {
-  	lastKnownRating = rating;
-  	console.log("rating changed to:", rating);
-  	db.setWatched(favoriteMovie,rating);
-  }
-
-}
