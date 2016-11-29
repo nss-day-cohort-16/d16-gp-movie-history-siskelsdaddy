@@ -39,8 +39,8 @@ function searchOMDB(title) {
 						return value.Title.toLowerCase().indexOf(title) > -1;
 					});
 
-					OMDBArray.forEach(function(valO, indO) {
-						filteredMovies.forEach(function (valF, indF) {	
+					filteredMovies.forEach(function (valF, indF) {	
+						OMDBArray.forEach(function(valO, indO) {
 							if (valO.imdbID === valF.imdbID){
 								OMDBArray.splice(indO, 1);
 							}

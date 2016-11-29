@@ -88,22 +88,22 @@ $("#showUnwatchedBtn").click(function (){
   userID = user.getUser();
   db.getMoviesFromFirebase(userID)
   .then(function setStarListeners(){
-  $('.example').each(function(index, item){
-    $(item).barrating('show', {
-      theme: 'bootstrap-stars',
-      initialRating: initRatings[index],
-      silent: true,
-      onSelect: function(value, text, event) {
-        let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-        let parentEl = $(event.target).parents()[1];
-        parentEl.firstChild.setAttribute('value', value);
-        $(parentEl.firstChild).barrating('set', value);
-        db.setWatched(favoriteMovie, value);
-         $(`[data--imdb-id=${favoriteMovie}]`).hide();
-      }
+    $('.example').each(function(index, item){
+      $(item).barrating('show', {
+        theme: 'bootstrap-stars',
+        initialRating: initRatings[index],
+        silent: true,
+        onSelect: function(value, text, event) {
+          let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+          let parentEl = $(event.target).parents()[1];
+          parentEl.firstChild.setAttribute('value', value);
+          $(parentEl.firstChild).barrating('set', value);
+          db.setWatched(favoriteMovie, value);
+           $(`[data--imdb-id=${favoriteMovie}]`).hide();
+        }
+      });
     });
   });
-});
   $("#breadCrumbs").text("Movie History > Unwatched Flicks");
 });
 
@@ -172,7 +172,7 @@ $(document).on("click", ".deleteBtn", (event) => {
       db.loadWatched(true,userID)
       .then(setStarListeners);
     } else if ($("#favoritesBtn").hasClass("filter")) {
-      db.loadFavorites(10, 10,userID)
+      db.loadFavorites(10, userID)
       .then(setStarListeners);
     } else {
       db.getMoviesFromFirebase(userID)
