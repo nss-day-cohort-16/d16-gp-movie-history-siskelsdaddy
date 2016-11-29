@@ -8,9 +8,13 @@ firebase.auth().onAuthStateChanged(function(user){
     if (user){
         currentUser = user.uid;
         console.log("current user Logged in?", currentUser);
+        $("#signIn").addClass("hide");
+        $("#signOut").removeClass("hide");
     }else {
         currentUser = null;
         console.log("current user NOT logged in:", currentUser);
+        $("#signOut").addClass("hide");
+        $("#signIn").removeClass("hide");
     }
 });
 
