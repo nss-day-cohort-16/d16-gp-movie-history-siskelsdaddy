@@ -99,10 +99,8 @@ function cardBuilder(movieObj) {
     if (index === movieData.length - 1) {
       cardsString += `</div>`;
     }
-console.log("card generated: ", cardsString);
     outputString += cardsString;
     cardsString = '';
-console.log("output string: ", outputString);
   });
   OUTPUT.append(outputString);
 }

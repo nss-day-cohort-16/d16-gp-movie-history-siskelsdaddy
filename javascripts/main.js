@@ -182,14 +182,12 @@ $(document).on("click", ".deleteBtn", (event) => {
 });
 
 function setStarListeners(){
-console.log("setStarListeners called: ");
   $('.example').each(function(index, item){
     $(item).barrating('show', {
       theme: 'bootstrap-stars',
       initialRating: initRatings[index],
       silent: true,
       onSelect: function(value, text, event) {
-console.log("onSelect in SetStarListeners called: ", value, text, event);
         let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
         let parentEl = $(event.target).parents()[1];
         parentEl.firstChild.setAttribute('value', value);

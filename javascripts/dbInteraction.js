@@ -48,10 +48,9 @@ function searchOMDB(title) {
 					});
 					sumArray = sumArray.concat(OMDBArray);
 					sumArray = sumArray.concat(filteredMovies);
-console.log("the array we send to builder: ", sumArray);
 					cards.cardBuilder(sumArray);
-		  		// $('.example').hide();
-				  // $('.example').parent().append("<p>In your Collection</p>");
+		  		$('.example').hide();
+				  $('.example').parent().append("<p>In your Collection</p>");
 				});
 			 });
 
