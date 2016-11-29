@@ -165,32 +165,25 @@ $(document).on("click", ".deleteBtn", (event) => {
 	});
 });
 
+
+
 function setStarListeners(){
-
-	let numStarBars = $('.example');
-	console.log("numStarBars", numStarBars);
-	console.log("numStarBars.length",numStarBars.length );
-	for (let i = 0; i < numStarBars.length; i++){
-		console.log("adding event listener to " + $(numStarBars[i]));
-		$(numStarBars[i]).change(starListener);
-	}
+  $('.example').each(function(index, item){
+    $(item).barrating('show', {
+      theme: 'bootstrap-stars',
+      initialRating: initRatings[index],
+      silent: true,
+      onSelect: function(value, text, event) {
+        let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
+        let parentEl = $(event.target).parents()[1];
+        parentEl.firstChild.setAttribute('value', value);
+        $(parentEl.firstChild).barrating('set', value);
+        db.setWatched(favoriteMovie, value);
+        $(`[data--imdb-id=${favoriteMovie}]`).hide();
+      }
+    });
+  });
 }
-
-function starListener(event){
-  
-  let favoriteMovie = event.target.closest('.movieCard').getAttribute("data--imdb-id");
-
-	console.log("favoriteMovie", favoriteMovie);  
-  let rating = event.target.getAttribute('value');
-  if (rating === null || rating === lastKnownRating) {
-	  console.log("rating stayed the same:", rating);
-  } else {
-  	lastKnownRating = rating;
-  	console.log("rating changed to:", rating);
-  	db.setWatched(favoriteMovie,rating);
-  	$(`[data--imdb-id=${favoriteMovie}]`).hide();
-  	
-  }
 
 
   $('.example').each(function(index, item){
@@ -207,6 +200,6 @@ function starListener(event){
       }
     });
   });
->
-}
+
+
 
